@@ -18,7 +18,7 @@ public class BaseTest {
     public  void beforeSuiteStartWD() {
         try {
             String env = System.getProperty("runEnv");
-            TestProperties.loadProperties((env!=null?env:"next"));
+            TestProperties.loadProperties((env!=null?env:"dev"));
             Driver.startOrBackToFirstDriver(this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
