@@ -22,79 +22,76 @@ public class Element extends BaseElement {
 
 
     /**
-     * @param elementName    : nom / description de l'élément
-     * @param elementLocator : information d'identification de l'élément. Exemple : By.id("idelement"), By.name("elementName"), By.xpath("//a[@class='toto']")
+     * constructor
+     * @param elementName element description, for report
+     * @param elementLocator element locator
      */
     public Element(String elementName, By elementLocator) {
         super(elementName, elementLocator);
     }
 
+    /**
+     * set container of the element, container is an element containing the element
+     * @param containerElement
+     * @return
+     */
     public Element setContainer(Element containerElement) {
         return (Element) setBaseContainer((BaseElement) containerElement);
     }
+
+    /**
+     * reset the container of the element
+     * @return
+     */
     public Element resetContainer() {
         return (Element) resetBaseContainer();
     }
+
+    /**
+     * get the container of the element
+     * @return
+     */
     public Element getContainer() {
         return (Element) getBaseContainer();
     }
+
+    /**
+     * replace some strings in locator by other values. For example :
+     * Element element = new Element("element, By.xpath("//button[@class='{myClasse}'][contains(.,'{aValue}')]);
+     * element.setParamater(new String[] {"{myClasse}","success_button", "{aValue}", "Enregister"});
+     * @param params
+     * @return
+     */
     public Element setParameter(String[] params) {
         return (Element) setBaseParameter(params);
     }
+
+    /**
+     * replace one string in the locator by other values. For example :
+     * Element element = new Element("element, By.xpath("//button[@class='{myClasse}']);
+     * element.setParamater({"{myClasse}","success_button");
+     * @param key
+     * @param value
+     * @return
+     */
     public Element setParameter(String key, String value) {
         return (Element) setBaseParameter(key, value);
     }
 
-    static void startSearch(String from) {
-        if (dateStartSearch.containsKey(from)) {
-            dateStartSearch.remove(from);
-        }
-        dateStartSearch.put(from, LocalDateTime.now());
-    }
-
-    static boolean stopSearch(int timeout, String from) {
-        if (dateStartSearch.get(from).plusSeconds(timeout).isAfter(LocalDateTime.now())) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    boolean pageloaded(Class pageObjectToBeLoaded, String assertLoadedMethod) {
-        boolean loaded = false;
-        boolean hasLoadedMethod = false;
-        for (final Method method : pageObjectToBeLoaded.getMethods()) {
-            if (method.getName().equals(assertLoadedMethod)) {
-                if (method.getParameterCount() == 0) {
-                    hasLoadedMethod = true;
-                    try {
-                        loaded = (boolean) method.invoke(null);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-            }
-        }
-        return (hasLoadedMethod ? loaded : true);
-    }
-
-
-
     /**
-     * retourne ton père Luc;
+     * return parent element
      *
-     * @return le selenium WebElement père de l'élément
+     * @return parent elemnt
      */
     public WebElement getFather() {
         return findElement().findElement(By.xpath(".."));
     }
 
     /**
-     * retourne ton père Luc, non ton grand-père, non ton arrière grand-père. Attend tu m'as dit remonter jusqu'à quand ? 3, alors ton arrière grand-perè;
+     * return Nth ancestor of the element
      *
-     * @param nbFather : Nieme de degré de parentalité
-     * @return le selenium WebElement parent au Nieme degré de l'élément
+     * @param nbFather : Nth ancestor degree
+     * @return Nth ancestor element
      */
     public WebElement getFather(int nbFather) {
         WebElement element = findElement();
@@ -105,11 +102,11 @@ public class Element extends BaseElement {
     }
 
     /**
-     * retourne "noir" pour nbFather=1 et attr="couleur-casque", Luc;
+     * return ancestor attribute
      *
-     * @param nbFather : Nieme de degré de parentalité
-     * @param attr     : nom de l'attribut
-     * @return le selenium WebElement parent au Nieme degré de l'élément
+     * @param nbFather : Nth ancestor degree
+     * @param attr     : attribute name
+     * @return attribute value
      */
     public String getFatherAttribute(int nbFather, String attr) {
         return getFather(nbFather).getAttribute(attr);
@@ -117,10 +114,10 @@ public class Element extends BaseElement {
 
 
     /**
-     * retourne le nombre de WebElement selenium correspondant à la description de l'élément dans un délai de : timeout secondes;
+     * return number of elements responding to the element locator
      *
-     * @param timeout : timeout en seconde
-     * @return le nombre de selenium WebElements correspondant au locator de l'élément
+     * @param timeout
+     * @return number of elements
      */
     public int getElementsNumber(int timeout) {
         try {
@@ -131,10 +128,10 @@ public class Element extends BaseElement {
     }
 
     /**
-     * indique si un élément est affiché dans un délai de : timeout secondes;
+     * return if the element exists in the DOM
      *
-     * @param timeout : timeout en seconde
-     * @return true si existe, false sinon
+     * @param timeout
+     * @return exists?= true
      */
     public boolean exists(int timeout) {
         if (findElementNoScrollBefore((int) timeout) != null) {
@@ -145,62 +142,36 @@ public class Element extends BaseElement {
     }
 
     /**
-     * indique si l'élément est enabled a l'écran dans un délai de : timeout secondes;
+     * return if the element is enabled
      *
-     * @param timeout : timeout en seconde
-     * @return true si displayed, false sinon
+     * @param timeout
+     * @return enabled?=true
      */
     public boolean isEnabled(int timeout) {
         try {
-            return findElementDisplayedNoScrollBeforeMaxWait(timeout).isEnabled();
+            return findElementDisplayedNoScrollBefore(timeout).isEnabled();
         } catch (Exception e) {
             return false;
         }
     }
 
     /**
-     * indique si l'élément est enabled a l'écran dans un délai de : 1 seconde;
+     * return is te element is displayed in the page
      *
-     * @return true si displayed, false sinon
-     */
-    public boolean isEnabled() {
-        try {
-            return findElementDisplayedNoScrollBeforeMaxWait(1).isEnabled();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * indique si l'élément est visible a l'écran dans un délai de : timeout secondes;
-     *
-     * @param timeout : timeout en seconde
-     * @return true si displayed, false sinon
+     * @param timeout
+     * @return displayed ?=true
      */
     public boolean isDisplayed(int timeout) {
         try {
-            return findElementDisplayedNoScrollBeforeMaxWait(timeout).isDisplayed();
+            return findElementDisplayedNoScrollBefore(timeout).isDisplayed();
         } catch (Exception e) {
             return false;
         }
     }
 
     /**
-     * indique si l'élément est visible a l'écran dans un délai de : 1 seconde;
-     *
-     * @return true si displayed, false sinon
-     */
-    public boolean isDisplayed() {
-        try {
-            return findElementDisplayedNoScrollBeforeMaxWait(1).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * indique si un élément est coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * @return true si coché, false sinon
+     * return if the element is checked
+     * @return checked ?=true
      */
     public boolean isChecked() {
         System.out.println("isChecked " + this.getName());
@@ -217,32 +188,10 @@ public class Element extends BaseElement {
     }
 
     /**
-     * indique si l'élément est chargé dans un délai de : test_env.properties#implicit_wait secondes;
+     * return if the element is loaded
      *
-     * @return true si chargé, false sinon
-     */
-    public boolean loaded() {
-        return loaded(TestProperties.implicit_wait);
-    }
-
-    /**
-     * indique si l'élément n'est pas chargé dans un délai de : 60 secondes;
-     *
-     * @return true si non chargé, false sinon
-     */
-    public boolean unloaded() {
-        startSearch("unloaded");
-        while (findElementDisplayedNoScrollBeforeMaxWait(0) != null && !stopSearch(60, "unloaded")) {
-        }
-        ;
-        return findElementDisplayedNoScrollBeforeMaxWait(0) == null;
-    }
-
-    /**
-     * indique si l'élément est chargé dans un délai de : timeout secondes;
-     *
-     * @param timeout : timout en seconde
-     * @return true si chargé, false sinon
+     * @param timeout
+     * @return loaded?=true
      */
     public boolean loaded(int timeout) {
         boolean elementLoaded = true;
@@ -264,11 +213,8 @@ public class Element extends BaseElement {
         return elementLoaded;
     }
 
-
-
     /**
-     * fait un mouseover sur l'élément qu'il est displayed dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * mouseover the element
      */
     public void mouseOver() {
         System.out.println("mouseOver " + this.getName());
@@ -288,19 +234,19 @@ public class Element extends BaseElement {
     }
 
     /**
-     * renvoi la valeur d'élément dans un délai de : test_env.properties#implicit_wait secondes;
+     * return element value. TestProperties.timeout
      *
-     * @return la valeur si trouvée, "not found" si pas trouvé. Le résultat est tracé dans le rapport.
+     * @return value or "not found".
      */
     public String getValue() {
-        return getValue(TestProperties.implicit_wait);
+        return getValue(TestProperties.timeout);
     }
 
     /**
-     * renvoi la valeur d'élément dans un délai de : timeout secondes;
+     * return element value
      *
-     * @param timeout : timeout en seconde
-     * @return la valeur si trouvée, "not found" si pas trouvé. Le résultat est tracé dans le rapport.
+     * @param timeout
+     * @return value or "not found"
      */
     public String getValue(int timeout) {
         System.out.println("getValue " + this.getName());
@@ -312,7 +258,6 @@ public class Element extends BaseElement {
             }else{
                 if (element.getTagName().toUpperCase().equals("INPUT") || element.getTagName().toUpperCase().equals("TEXTAREA")) {
                     elementValue = ((String)Driver.JSExecutor().executeScript("return arguments[0].value", element)).trim();
-                    System.out.println("value " + elementValue);
                 } else {
                     if (element.getTagName().toUpperCase().equals("SELECT")) {
                         Select select = new Select(Driver.getCurrentDriver().findElement(this.getLocator()));
@@ -325,7 +270,6 @@ public class Element extends BaseElement {
                         System.out.println("value " + elementValue);
                     } else {
                         elementValue = element.getText().trim();
-                        System.out.println("texte " + elementValue);
                     }
                 }
             }
@@ -336,10 +280,10 @@ public class Element extends BaseElement {
     }
 
     /**
-     * renvoi la valeur d'un attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
+     * return element attribute
      *
-     * @param attribute : l'attribut de l'élément
-     * @return la valeur si trouvée, "not found" si pas trouvé. Le résultat est tracé dans le rapport.
+     * @param attribute name
+     * @return attribute value
      */
     public String getAttribute(String attribute) {
         String attrVal;
@@ -353,9 +297,9 @@ public class Element extends BaseElement {
     }
 
     /**
-     * renvoi la position d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
+     * return position x,y of the element
      *
-     * @return [X, Y] position de l'élément
+     * @return [X, Y] element position
      */
     public int[] getXY() {
         int x = 0;
@@ -372,9 +316,9 @@ public class Element extends BaseElement {
     }
 
     /**
-     * renvoi la dimension d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
+     * return element dimension
      *
-     * @return [X, Y] dimension de l'élément
+     * @return [X, Y] element dimension
      */
     public int[] getDimension() {
         int x = 0;
@@ -397,22 +341,17 @@ public class Element extends BaseElement {
 
     /////////////// ACTION
     /**
-     * saisi une valeur dans l'élément des qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
-     * @param value : valeur a saisir (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * set element value
+     * @param value
      */
     public void setValue(String value) {
         if (value != null) {
-            //
             String action = "setValue >> " + value + " ";
             String result = "error";
+            startSearch("setValue");
             WebElement element = findElementEnabled();
-            System.out.println(this);
-            System.out.println(this.getName());
-            System.out.println(this.getLocator());
             String errorMessage = null;
-            int i = 0;
-            while (i<10 && !result.equals("pass")) {
+            while (!stopSearch(TestProperties.timeout, "setValue") && !result.equals("pass")) {
                 try {
                     element.clear();
                     Loader.waitUntilJSReady();
@@ -424,18 +363,15 @@ public class Element extends BaseElement {
                     element = findElement(0);
                     errorMessage = e2.getMessage();
                 }
-                i++;
             }
             Driver.getReport().log(result, action, this.getName() + " (" + this.getLocator().toString() + ")", null, null, errorMessage);
         }
     }
 
     /**
-     * click sur l'élément des qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes;
-     * reclick jusqu'à ce que la page pageObjectToBeLoadedAfterClick soit chargée (la méthode loaded() renvoyant true quand page chargé doit être codée dans la classe pageObjects de la page)
-     * Le résultat est tracé dans le rapport.
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click element until on page is loaded
+     * @param pageObjectToBeLoadedAfterClick class pageObjects to be loaded after click
+     * @param assertLoadedMethod method of class pageObjectToBeLoadedAfterClick that must return "true" when page is loaded
      */
     public void click(Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         startSearch("clickpageObjectToBeLoadedAfterClick");
@@ -444,12 +380,10 @@ public class Element extends BaseElement {
     }
 
     /**
-     * click sur l'élément des qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes;
-     * reclick jusqu'à ce que la page pageObjectToBeLoadedAfterClick soit chargée (la méthode loaded() renvoyant true quand page chargé doit être codée dans la classe pageObjects de la page)  tout en recliquant sur elementToReclickBeforeIfFail si l'élément à cliquer n'est pas visible
-     * Le résultat est tracé dans le rapport.
-     * @param elementToReclickBeforeIfFail : element sur lequel cliquer avant de retenter un click en cas d'echec
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click element until on page is loaded, when fail click on a previous element before retruing the click on element
+     * @param elementToReclickBeforeIfFail : element to be clicked before re-click the element if fail
+     * @param pageObjectToBeLoadedAfterClick class pageObjects to be loaded after click
+     * @param assertLoadedMethod method of class pageObjectToBeLoadedAfterClick that must return "true" when page is loaded
      */
     public void click(Element elementToReclickBeforeIfFail, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         startSearch("clickpageObjectToBeLoadedAfterClickAndClickBefore");
@@ -461,18 +395,15 @@ public class Element extends BaseElement {
 
 
     /**
-     * click sur l'élément des qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * click on the element
      */
     public void click() {
-        //WebDriver.getCurrentBrowserTabs().beforeSwitch();
         System.out.println("click " + this.getName());
         String result = "error";
         String errorMessage = null;
         startSearch("click");
-        int i = 0;
         findElementEnabled();
-        while (i<10 && !result.equals("pass")) {
+        while (!stopSearch(TestProperties.timeout, "click") && !result.equals("pass")) {
             errorMessage = null;
             try {
                 findElement(0).click();
@@ -481,16 +412,13 @@ public class Element extends BaseElement {
             catch (Exception e) {
                 errorMessage += e.getMessage() + e.toString();
             }
-            i++;
         }
         Driver.getReport().log(result, "click", this.getName() + " (" + this.getLocator().toString() + ")",  null , null, errorMessage);
     }
 
     /**
-     * click sur l'élément dès qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes;
-     * Si le click fail, click sur l'élément indique en parametre avant de retenter un click sur l'élément.
-     * Le résultat est tracé dans le rapport.
-     * @param elementToReclickBeforeIfFail : element sur lequel cliquer avant de retenter un click en cas d'echec
+     * click on the element, and click on a previous element before retying if click fail
+     * @param elementToReclickBeforeIfFail : element to be clicked before re-click the element if fail
      */
     public void click(Element elementToReclickBeforeIfFail) {
         System.out.println("click " + this.getName() + " avec click before " + elementToReclickBeforeIfFail.getName());
@@ -502,22 +430,21 @@ public class Element extends BaseElement {
     }
 
     /**
-     * selectionne une option dans une liste de type select ou UL/LI
+     * select on element in list element such as SELECT/OPTION or UL/LI
      * @param option : option à choisir
      */
     public void selectInList(String option) {
         if (option!=null) {
             String result = "error";
             String errorMessage = "";
+            startSearch("selectInList");
             try {
                 if (option != null) {
                     this.findElementNoScrollBefore();
-                    int i = 0;
-                    while (!this.getValue().contains(option) && i < 10) {
+                    while (!this.getValue().contains(option) && !stopSearch(TestProperties.timeout, "selectInList")) {
                         this.clickIfPossible();
                         Element optionElement = new Element("Option '" + option + "'", By.xpath("li[contains(.,\"" + option + "\")]|option[contains(.,\"" + option + "\")]")).setContainer(this);
                         optionElement.clickIfPossible();
-                        i++;
                     }
                     result = (this.getValue().contains(option)?"pass":"fail");
                     System.out.println("select " + result + this.getName() + "=>" + option);
@@ -533,18 +460,17 @@ public class Element extends BaseElement {
 
 
     /**
-     * click sur le fils numero numeroSousElement de l'élément
-     * @param numeroSousElement numero du sous élément
+     * click on child element number N
+     * @param subElementNumber numero du sous élément
      */
-    public void clickSubElementNo(String numeroSousElement) {
-        Element sousElement = new Element("sous element {N} de " + this.getName(), By.xpath(this.locatorXpath() + "/*[{N}]")).setParameter("{N}", numeroSousElement);
+    public void clickSubElementNo(String subElementNumber) {
+        Element sousElement = new Element("sous element {N} de " + this.getName(), By.xpath(this.locatorXpath() + "/*[{N}]")).setParameter("{N}", subElementNumber);
         sousElement.click();
     }
 
     /**
-     * click sur l'élément dès qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes; jusqu'à l'apparition d'un des éléments passés en paramètres
-     * Le résultat est tracé dans le rapport.
-     * @param elementToBeDisplayed : liste des éléments dont on attend qu'aux moins 1 apparaissent.
+     * click the element until one element in the arg list is displayed
+     * @param elementToBeDisplayed : elements list to be displayed
      */
     public Element clickUntilOneOfThoseElementsDisplayed(Element[] elementToBeDisplayed) {
         Element displayedElement = null;
@@ -567,10 +493,9 @@ public class Element extends BaseElement {
     }
 
     /**
-     * click sur l'élément dès qu'il est enabled dans un délai de : test_env.properties#implicit_wait secondes; jusqu'à l'apparition d'un des éléments passés en paramètres tout en recliquant sur elementToReclickBeforeIfFail si l'élément à cliquer n'est pas visible
-     * Le résultat est tracé dans le rapport.
-     * @param elementToReclickBeforeIfFail : element sur lequel cliquer avant de retenter un click en cas d'echec
-     * @param elementToBeDisplayed : liste des éléments dont on attend qu'aux moins 1 apparaissent.
+     * click the element until one element in the arg list is displayed, and click on a previous element before retying if click fail
+     * @param elementToReclickBeforeIfFail : element to be clicked before re-click the element if fail
+     * @param elementToBeDisplayed : element to be clicked before if fail
      */
     public void clickUntilOneOfThoseElementsDisplayed(Element elementToReclickBeforeIfFail, Element[] elementToBeDisplayed) {
         System.out.println("clickUntilOneOfThoseElementsDisplayed " + this.getName());
@@ -592,11 +517,8 @@ public class Element extends BaseElement {
     }
 
     /**
-     * le click() de base scroll dans la page sur l'élément avant de cliquer. Cette méthode non : donc ça peut failer si l'élément est hors cadre mais ça évite de refermer les listes déroulantes quand on clique un de leurs éléments.
-     * Le résultat est tracé dans le rapport.
-     * Si le click fail, click sur l'élément indique en parametre avant de retenter un click sur l'élément.
-     * Le résultat est tracé dans le rapport.
-     * @param elementToReclickBeforeIfFail : element sur lequel cliquer avant de retenter un click en cas d'echec
+     * click element without scrolling to it and click on a previous element before retying if click fail
+     * @param elementToReclickBeforeIfFail : element to be clicked before re-click the element if fail
      */
     public void clickNoScrollBefore(Element elementToReclickBeforeIfFail) {
         System.out.println("click " + this.getName() + " avec click before " + elementToReclickBeforeIfFail.getName());
@@ -608,16 +530,14 @@ public class Element extends BaseElement {
     }
 
     /**
-     * le click() de base scroll dans la page sur l'élément avant de cliquer. Cette méthode non : donc ça peut failer si l'élément est hors cadre mais ça évite de refermer les listes déroulantes quand on clique un de leurs éléments.
-     * Le résultat est tracé dans le rapport.
+     * click element without scrolling to it
      */
     public void clickNoScrollBefore() {
-        clickNoScrollBefore(TestProperties.implicit_wait);
+        clickNoScrollBefore(TestProperties.timeout);
     }
 
     /**
-     * le click(int timeout) de base scroll dans la page sur l'élément avant de cliquer. Cette méthode non : donc ça peut failer si l'élément est hors cadre mais ça évite de refermer les listes déroulantes quand on clique un de leurs éléments.
-     * Le résultat est tracé dans le rapport.
+     * click element without scrolling to it
      * @param timeout : timeout en seconde
      */
     public void clickNoScrollBefore(int timeout) {
@@ -636,58 +556,35 @@ public class Element extends BaseElement {
     }
 
     /**
-     * click si c'est possible, sinon passe son chemin sans erreur.
-     * Le résultat est tracé dans le rapport.
+     * click element if possible. No error if can't click
      */
     public void clickIfPossible() {
         //WebDriver.getCurrentBrowserTabs().beforeSwitch();
         System.out.println("clickIfPossible " + this.getName());
         try {
-            findElementDisplayedMaxWait(5).click();
+            findElementDisplayed(5).click();
         } catch (Exception e) {
             // on fait rien
         }
     }
 
     /**
-     * click tout de suite maintenant sur l'élément sans attendre qu'il soit là ou pas;
-     * Le résultat est tracé dans le rapport.
-     */
-    public void clickNow() {
-        //WebDriver.getCurrentBrowserTabs().beforeSwitch();
-        System.out.println("clickNow " + this.getName());
-        String result = null;
-        String errorMessage = null;
-        try {
-            findElementDisplayedMaxWait(0).click();
-            result = "pass";
-        } catch (Exception e) {
-            e.printStackTrace();
-            errorMessage = e.getMessage();
-            result = "fail";
-        }
-        Driver.getReport().log(result, "clickNow", this.getName() + " (" + this.getLocator().toString() + ")",  null , null, errorMessage);
-    }
-
-    /**
-     * click tout de suite maintenant sur l'élément sans attendre qu'il soit là ou pas;
-     * Le résultat est tracé dans le rapport.
+     * click element, timeout 0, no error but send an execption
      */
     public void clickException() {
-        findElementDisplayedMaxWait(0).click();
+        findElementDisplayed(0).click();
     }
 
     /**
-     * coche une checkbox des qu'elle est enabled si elle n'est pas cochée dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * check or uncheck element
+     * @param checkEl check or uncheck ?
      */
-    public void check(boolean cocher) {
-        if (cocher)check(); else uncheck();
+    public void check(boolean checkEl) {
+        if (checkEl)check(); else uncheck();
     }
 
     /**
-     * coche une checkbox des qu'elle est enabled si elle n'est pas cochée dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * check element
      */
     public void check() {
         System.out.println("check " + this.getName());
@@ -703,8 +600,7 @@ public class Element extends BaseElement {
     }
 
     /**
-     * décoche une checkbox des qu'elle est enabled si elle est coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * uncheck element
      */
     public void uncheck() {
         System.out.println("uncheck " + this.getName());
@@ -720,8 +616,7 @@ public class Element extends BaseElement {
     }
 
     /**
-     * coche les checkbox si elles ne sont pas cochées dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * check all checkbox correspondig to the locator
      */
     public void checkAll() {
         System.out.println("checkAll " + this.getName());
@@ -743,8 +638,7 @@ public class Element extends BaseElement {
     }
 
     /**
-     * décoche les checkbox si elles sont cochées dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * uncheck all checkbox correspondig to the locator
      */
     public void uncheckAll() {
         System.out.println("uncheckAll " + this.getName());
@@ -767,22 +661,16 @@ public class Element extends BaseElement {
 
 
     /**
-     * réalise un click sur des coordonnées dans un élément trouve dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
-     * @param x : abscisse du point à cliquer à partir du centre de l'élément
-     * @param y : ordonnée du point à cliquer à partir du centre de l'élément
+     * click at position x,y in the element
+     * @param x
+     * @param y
      */
     public void clickOnPoint(int x, int y) {
         System.out.println("clickOnPoint");
         String result = "error";
         String errorMessage = null;
         try {
-            int[] dimCarte = this.getDimension();
-            int centreX = 0;
-            int centreY = 0;
             Actions action = new Actions(Driver.getCurrentDriver());
-            //action.moveToElement(this.findElement(), centreX, centreY).build().perform();
-            //action.moveByOffset(x, y).click().build().perform();
             action.moveToElement(this.findElement(), x, y).click().build().perform();
             while (!Driver.JSExecutor().executeScript("return document.readyState").toString().equals("complete")) {
             }
@@ -796,10 +684,9 @@ public class Element extends BaseElement {
 
 
     /**
-     * drag et drop de +x, +y un élément trouvé dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
-     * @param x : déplacement de x horizontalement
-     * @param y : déplacement de y verticalement
+     * drag and drop element from its postion to postion + x,y
+     * @param x
+     * @param y
      */
     public void dragDrop(int x , int y) {
         System.out.println("dragDrop");
@@ -823,16 +710,15 @@ public class Element extends BaseElement {
 
     /////////////// ASSERTION
     /**
-     * vérifie qu'un élément est coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element checked
      */
     public void assertChecked() {
         assertChecked(false);
     }
+
     /**
-     * vérifie qu'un élément est coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert element checked
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertChecked(boolean justWarning) {
         System.out.println("assertChecked " + this.getName());
@@ -852,16 +738,15 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'un élément est non coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element unchecked
      */
     public void assertUnchecked() {
         assertUnchecked(false);
     }
+
     /**
-     * vérifie qu'un élément est non coché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert element unchecked
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertUnchecked(boolean justWarning) {
         System.out.println("assertUnchecked " + this.getName());
@@ -881,16 +766,16 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est enabled dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element enabled
      */
     public void assertEnabled() {
         assertEnabled(false);
     }
 
     /**
-     * vérifie que l'élément est enabled dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element enabled
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertEnabled(boolean justWarning) {
         System.out.println("assertEnabled " + this.getName());
@@ -910,16 +795,16 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est disabled dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element disabled
      */
     public void assertDisabled() {
         assertDisabled(false);
     }
 
     /**
-     * vérifie que l'élément est disabled dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element disabled
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertDisabled(boolean justWarning) {
         System.out.println("assertDisabled " + this.getName());
@@ -939,16 +824,16 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est non visible dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element hidden
      */
     public void assertHidden() {
         assertHidden(false);
     }
 
     /**
-     * vérifie que l'élément est non visible dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element hidden
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertHidden(boolean justWarning) {
         System.out.println("assertHidden " + this.getName());
@@ -968,18 +853,18 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est visible dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element displayed
      */
-    public void assertVisible() {
-        assertVisible(false);
+    public void assertDisplayed() {
+        assertDisplayed(false);
     }
 
     /**
-     * vérifie que l'élément est visible dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element displayed
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
-    public void assertVisible(boolean justWarning) {
+    public void assertDisplayed(boolean justWarning) {
         System.out.println("assertVisible " + this.getName());
         String result = (justWarning ? "warning" : "errornext");
         String errorMessage = null;
@@ -997,16 +882,16 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est obligatoire dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element required
      */
     public void assertRequired() {
         assertRequired(false);
     }
 
     /**
-     * vérifie que l'élément est obligatoire dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element required
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertRequired(boolean justWarning) {
         System.out.println("assertRequired " + this.getName());
@@ -1026,16 +911,16 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que l'élément est facultatif dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element not required
      */
     public void assertNotRequired() {
         assertNotRequired(false);
     }
 
     /**
-     * vérifie que l'élément est facultatif dans un délai de : test_env.properties#implicit_wait secondes;
+     * assert element not required
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertNotRequired(boolean justWarning) {
         System.out.println("assertNotRequired " + this.getName());
@@ -1055,23 +940,19 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que la valeur d'un élément vaut 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * pour les vérifications massives via classe Formulaire et fichier json si la valeur vaut "element hidden" on appelle assertHidden, si ça vaut "element does not exist" on appelle assertNotExist
-     * Le résultat est tracé dans le rapport.
+     * assert element value
      *
-     * @param value : valeur attendu de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * @param value
      */
     public void assertValue(String value) {
         assertValue(value, false);
     }
 
     /**
-     * vérifie que la valeur d'un élément vaut 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * pour les vérifications massives via classe Formulaire et fichier json si la valeur vaut "element hidden" on appelle assertHidden, si ça vaut "element does not exist" on appelle assertNotExist
-     * Le résultat est tracé dans le rapport.
+     * assert element value
      *
-     * @param value       : valeur attendu de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertValue(String value, boolean justWarning) {
         switch (value) {
@@ -1088,7 +969,7 @@ public class Element extends BaseElement {
                 String errorMessage = null;
                 String elementValue = "not found";
                 value = String.valueOf(value).replace("\\n", System.getProperty("line.separator"));
-                int timeout = TestProperties.implicit_wait;
+                int timeout = TestProperties.timeout;
                 try {
                     for (int i=0;i<10;i++) {
                         elementValue = getValue(timeout);
@@ -1111,21 +992,19 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que la valeur d'un élément contient 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value contains
      *
-     * @param value : valeur attendu de contenu dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * @param value
      */
     public void assertValueContains(String value) {
         assertValueContains(value, false);
     }
 
     /**
-     * vérifie que la valeur d'un élément contient 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value contains
      *
-     * @param value       : valeur attendu de contenu dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertValueContains(String value, boolean justWarning) {
         System.out.println("assertValueContains " + this.getName() + " >> " + value);
@@ -1134,7 +1013,7 @@ public class Element extends BaseElement {
         String elementValue = "not found";
         value = String.valueOf(value).replace("\\n", System.getProperty("line.separator"));
         try {
-            int timeout = TestProperties.implicit_wait;
+            int timeout = TestProperties.timeout;
             for (int i=0;i<10;i++) {
                 elementValue = getValue(timeout);
                 if (elementValue.replaceAll("\n", System.getProperty("line.separator")).contains(value.trim())) {
@@ -1155,21 +1034,19 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que la valeur d'un élément ne contient pas 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value not contains
      *
-     * @param value : valeur non attendu de contenu dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * @param value
      */
     public void assertValueNotContains(String value) {
         assertValueNotContains(value, false);
     }
 
     /**
-     * vérifie que la valeur d'un élément ne contient pas 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value not contains
      *
-     * @param value       : valeur non attendu de contenu dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertValueNotContains(String value, boolean justWarning) {
 
@@ -1179,7 +1056,7 @@ public class Element extends BaseElement {
         String elementValue = "not found";
         value = String.valueOf(value).replace("\\n", System.getProperty("line.separator"));
         try {
-            int timeout = TestProperties.implicit_wait;
+            int timeout = TestProperties.timeout;
             for (int i=0;i<10;i++) {
                 elementValue = getValue(timeout);
                 if (!elementValue.replaceAll("\n", System.getProperty("line.separator")).contains(value.trim())) {
@@ -1200,21 +1077,19 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que la valeur d'un élément commence par 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value starts with
      *
-     * @param value : valeur attendu de début dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * @param value
      */
     public void assertValueStartWith(String value) {
         assertValueStartWith(value, false);
     }
 
     /**
-     * vérifie que la valeur d'un élément commence par 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value starts with
      *
-     * @param value       : valeur attendu de début dans la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertValueStartWith(String value, boolean justWarning) {
         System.out.println("assertValueContains " + this.getName() + " >> " + value);
@@ -1223,7 +1098,7 @@ public class Element extends BaseElement {
         String elementValue = "not found";
         value = String.valueOf(value).replace("\\n", System.getProperty("line.separator"));
         try {
-            int timeout = TestProperties.implicit_wait;
+            int timeout = TestProperties.timeout;
             for (int i=0;i<10;i++) {
                 elementValue = getValue(timeout);
                 if (elementValue.replaceAll("\n", System.getProperty("line.separator")).startsWith(value.trim())) {
@@ -1244,31 +1119,28 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie que la valeur d'un élément est contenu dans 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value included in
      *
-     * @param value : valeur attendu contenant la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
+     * @param value
      */
     public void assertValueIncludedIn(String value) {
         assertValueIncludedIn(value, false);
     }
 
     /**
-     * vérifie que la valeur d'un élément est contenu dans 'value' dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element value included in
      *
-     * @param value       : valeur attendu contenant la valeur de l'élément (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertValueIncludedIn(String value, boolean justWarning) {
-
         System.out.println("assertValueIncludedIn " + this.getName() + " >> " + value);
         String result = (justWarning ? "warning" : "errornext");
         String errorMessage = null;
         String elementValue = "not found";
         value = String.valueOf(value).replace("\\n", System.getProperty("line.separator"));
         try {
-            int timeout = TestProperties.implicit_wait;
+            int timeout = TestProperties.timeout;
             for (int i=0;i<10;i++) {
                 elementValue = getValue(timeout);
                 if (value.contains(elementValue.replaceAll("\n", System.getProperty("line.separator")))) {
@@ -1289,25 +1161,23 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'un élément est affiché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element exists displayed or not
      */
     public void assertExists() {
         assertExists(false);
     }
 
     /**
-     * vérifie qu'un élément est affiché dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element exists displayed or not
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertExists(boolean justWarning) {
         System.out.println("assertExists " + this.getName());
         String result = (justWarning ? "warning" : "errornext");
         String errorMessage = null;
         try {
-            if (findElementDisplayedMaxWait(TestProperties.implicit_wait) != null) {
+            if (findElementDisplayed(TestProperties.timeout) != null) {
                 result = "pass";
             } else {
                 result = (justWarning ? "warning" : "failnext");
@@ -1320,8 +1190,7 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'un élément est affiché dans un délai de : timeout secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element exists displayed or not
      *
      * @param timeout : timeout en seconde
      */
@@ -1330,18 +1199,17 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'un élément est affiché dans un délai de : timeout secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element exists displayed or not
      *
      * @param timeout     : timeout en seconde
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertExists(int timeout, boolean justWarning) {
         System.out.println("assertExists " + this.getName());
         String result = (justWarning ? "warning" : "errornext");
         String errorMessage = null;
         try {
-            if (findElementDisplayedMaxWait(timeout) != null) {
+            if (findElementDisplayed(timeout) != null) {
                 result = "pass";
             } else {
                 result = (justWarning ? "warning" : "failnext");
@@ -1354,39 +1222,35 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'un élément est n'est affiché dans un délai de : 2 secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element does not exist
      */
     public void assertNotExists() {
         assertNotExists(2, false);
     }
 
     /**
-     * vérifie qu'un élément est n'est affiché dans un délai de : 2 secondes;
-     * Le résultat est tracé dans le rapport.
+     *  assert element does not exist
      *
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertNotExists(boolean justWarning) {
         assertNotExists(2, justWarning);
     }
 
     /**
-     * vérifie qu'un élément n'est affiché pas dans un délai de : timeout secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element does not exist
      *
-     * @param timeout : timeout en seconde
+     * @param timeout
      */
     public void assertNotExists(int timeout) {
         assertNotExists(timeout, false);
     }
 
     /**
-     * vérifie qu'un élément n'est affiché pas dans un délai de : timeout secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element does not exist
      *
-     * @param timeout     : timeout en seconde
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param timeout
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertNotExists(int timeout, boolean justWarning) {
         System.out.println("assertNotExists " + this.getName());
@@ -1394,9 +1258,9 @@ public class Element extends BaseElement {
         String errorMessage = null;
         startSearch("assertNotExists");
         try {
-            WebElement element = findElementDisplayedMaxWait(0);
+            WebElement element = findElementDisplayed(0);
             while (element != null && !stopSearch(timeout, "assertNotExists")) {
-                element = findElementDisplayedMaxWait(0);
+                element = findElementDisplayed(0);
             }
             if (element != null) {
                 result = (justWarning ? "warning" : "failnext");
@@ -1409,23 +1273,21 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie la valeur de l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value
      *
-     * @param attribute : nom de l'attribut
-     * @param value     : valeur de l'attribut attendu
+     * @param attribute
+     * @param value
      */
     public void assertAttribute(String attribute, String value) {
         assertAttribute(attribute, value, false);
     }
 
     /**
-     * vérifie la valeur de l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value
      *
-     * @param attribute   : nom de l'attribut
-     * @param value       : valeur de l'attribut attendu
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param attribute
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertAttribute(String attribute, String value, boolean justWarning) {
         System.out.println("assertAttribute " + this.getName() + " >> " + attribute + " >> " + value);
@@ -1447,23 +1309,21 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie une partie de la valeur de l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value contains
      *
-     * @param attribute : nom de l'attribut
-     * @param value     : partie de valeur de l'attribut attendu
+     * @param attribute
+     * @param value
      */
     public void assertAttributeContains(String attribute, String value) {
         assertAttributeContains(attribute, value, false);
     }
 
     /**
-     * vérifie une partie de la valeur de l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value contains
      *
-     * @param attribute   : nom de l'attribut
-     * @param value       : partie de valeur de l'attribut attendu
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param attribute
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertAttributeContains(String attribute, String value, boolean justWarning) {
         System.out.println("assertAttributeContains " + this.getName() + " >> " + attribute + " >> " + value);
@@ -1485,23 +1345,21 @@ public class Element extends BaseElement {
     }
 
     /**
-     * vérifie qu'une chaine n'est pas dans l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value does not contain
      *
-     * @param attribute : nom de l'attribut
-     * @param value     : chaine non attendu dans l'attribut
+     * @param attribute
+     * @param value
      */
     public void assertAttributeNotContains(String attribute, String value) {
         assertAttributeNotContains(attribute, value, false);
     }
 
     /**
-     * vérifie qu'une chaine n'est pas dans l'attribut d'un élément dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * assert element attribute value does not contain
      *
-     * @param attribute   : nom de l'attribut
-     * @param value       : chaine non attendu dans l'attribut
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * @param attribute
+     * @param value
+     * @param justWarning true if you wish assertion to send a warning instead of a failure
      */
     public void assertAttributeNotContains(String attribute, String value, boolean justWarning) {
         System.out.println("assertAttributeNotContains " + this.getName() + " >> " + attribute + " >> " + value);
@@ -1523,21 +1381,16 @@ public class Element extends BaseElement {
     }
 
 
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * copie dans le clipboard le contenu d'un élément trouve dans un délai de : test_env.properties#implicit_wait secondes;
+     * copy element value in clipboard
      *
-     * @return le contenu si trouvé, "unable to read clipboard string ", "error while copy to clipboard"
+     * @return
      */
     public String copyToClipBoard() {
         System.out.println("copyToClipBoard");
         String result;
         try {
             Actions action = new Actions(Driver.getCurrentDriver());
-            //action.moveToElement(this.findElement()).build().perform();
-            //action.moveByOffset(0, 0).click().sendKeys(Keys.chord(Keys.CONTROL, "a")).sendKeys(Keys.chord(Keys.CONTROL, "c")).build().perform();
             action.moveToElement(this.findElement(), 0, 0).click().click().click().click().build().perform();
             action.keyDown(Keys.CONTROL).sendKeys("c").keyUp(Keys.CONTROL).build().perform();
             while (!Driver.JSExecutor().executeScript("return document.readyState").toString().equals("complete")) {
@@ -1554,12 +1407,10 @@ public class Element extends BaseElement {
     }
 
     /**
-     * Se positionne dans un élément de type frame, iframe, object pour pouvoir agir sur les éléments contenus dans cet objet
-     * Le résultat est tracé dans le rapport.
+     * swith in the element, element must be an iframe
      */
     public void switchFrame() {
         System.out.println("switchFrame");
-        //WebDriver.getCurrentBrowserTabs().switchDefault();
         String result = "error";
         String errorMessage = null;
         try {
@@ -1573,10 +1424,9 @@ public class Element extends BaseElement {
     }
 
     /**
-     * upload un ou des fichiers dans un input type "file" dans un délai de : test_env.properties#implicit_wait secondes;
-     * Le résultat est tracé dans le rapport.
+     * upload files in element such as input type="file"
      *
-     * @param values : fichiers à charger séparés par des ;
+     * @param values files to be upload (must be in resources/Test Files, separate files name with ";")
      */
     public void uploadFile(String values) {
         if (values != null) {
@@ -1601,5 +1451,42 @@ public class Element extends BaseElement {
             Driver.getReport().log(result, action, this.getName() + " (" + this.getLocator().toString() + ")", null, null, errorMessage);
         }
     }
+
+
+    // private
+    private static void startSearch(String from) {
+        if (dateStartSearch.containsKey(from)) {
+            dateStartSearch.remove(from);
+        }
+        dateStartSearch.put(from, LocalDateTime.now());
+    }
+
+    private static boolean stopSearch(int timeout, String from) {
+        if (dateStartSearch.get(from).plusSeconds(timeout).isAfter(LocalDateTime.now())) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean pageloaded(Class pageObjectToBeLoaded, String assertLoadedMethod) {
+        boolean loaded = false;
+        boolean hasLoadedMethod = false;
+        for (final Method method : pageObjectToBeLoaded.getMethods()) {
+            if (method.getName().equals(assertLoadedMethod)) {
+                if (method.getParameterCount() == 0) {
+                    hasLoadedMethod = true;
+                    try {
+                        loaded = (boolean) method.invoke(null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+        return (hasLoadedMethod ? loaded : true);
+    }
+
 
 }

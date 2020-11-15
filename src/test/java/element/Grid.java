@@ -14,16 +14,10 @@ import java.util.List;
 public class Grid {
     Element gridContainer = new Element("gridContainer", By.xpath("to be defined in constructor"));
     Element rowDataHeaders = new Element("headers des lignes de données", By.xpath("//table/thead/tr/th")).setContainer(gridContainer);
-    Element rowDataHeader = new Element("header des lignes de données HEADER_NAME", By.xpath("//table/thead/tr/th[contains(., \"HEADER_NAME\")]|//table/thead/tr/th[attribute::*[contains(., \"HEADER_NAME\")]]")).setContainer(gridContainer);
-    Element rowDataHeaderSens = new Element("sens header du HEADER_NAME", By.xpath("(//table/thead/tr/th[contains(., \"HEADER_NAME\")]|//table/thead/tr/th[attribute::*[contains(., \"HEADER_NAME\")]])//span[contains(@class, \"ui-sortable-column-icon\")]")).setContainer(gridContainer);
-    Element rowDataHeaderByNum = new Element("header des lignes de données HEADER_NUM", By.xpath("//table/thead/tr/th[HEADER_NUM]")).setContainer(gridContainer);
-    Element rowDataHeaderSensByNum = new Element("sens header du HEADER_NUM", By.xpath("//table/thead/tr/th[HEADER_NUM]//span[contains(@class, \"ui-sortable-column-icon\")]")).setContainer(gridContainer);
     Element rowDataAll = new Element("liste des lignes de données", By.xpath("//tr[td]")).setContainer(gridContainer);
     Element rowDataByContent = new Element("ligne de données contenant VALUE_IN_ROW", By.xpath("//tr[td][contains(., \"VALUE_IN_ROW\")]")).setContainer(gridContainer);
-    Element rowDataByRowNum = new Element("ligne de données ROW_NUMBER", By.xpath("//tr[td][ROW_NUMBER]")).setContainer(gridContainer);
     Element cellDataByRowNumByColNum = new Element("cellule COL_NUMBER de la ligne ROW_NUMBER", By.xpath("//tr[td][ROW_NUMBER]/td[COL_NUMBER]")).setContainer(gridContainer);
     Element cellDataOneColAll = new Element("liste des cellules de la colonne COL_NUMBER", By.xpath("(//tr[td])/td[COL_NUMBER]")).setContainer(gridContainer);
-    Element cellActionByContent = new Element("action ATTR_ACTION sur la ligne contenant VALUE_IN_ROW", By.xpath("//tr[td][contains(., \"VALUE_IN_ROW\")]//*[attribute::*[contains(., \"ATTR_ACTION\")]]")).setContainer(gridContainer);
     Element cellActionByRowNum = new Element("action ATTR_ACTION sur la ligne ROW_NUMBER", By.xpath("//tr[td][ROW_NUMBER]//*[attribute::*[contains(., \"ATTR_ACTION\")]]")).setContainer(gridContainer);
 
 
@@ -45,32 +39,52 @@ public class Grid {
     }
 
     /**
-     * Construction d'un objet permettant de gérer les différent WebElement des grilles.
-     * @param gridName nom de la grille
-     * @param locator locator du container de la grid.
+     * Constructor
+     * @param gridName name for the report
+     * @param locator locator of the element containing the table
      */
     public Grid(String gridName, By locator) {
         gridContainer.setName(gridName);
         gridContainer.setLocator(locator);
     }
 
+    /**
+     * replace some strings in gridContainer locator by other values. 
+     * @param params
+     * @return
+     */
     public Grid setParameter(String[] params) {
         gridContainer.setParameter(params);
         return this;
     }
+
+    /**
+     * replace one string in the gridContainer locator by other values.
+     * @param key
+     * @param value
+     * @return
+     */
     public Grid setParameter(String key, String value) {
         gridContainer.setParameter(key, value);
         return this;
     }
 
+    /**
+     * return gridContainer element
+     * @return
+     */
     public Element getGridContainer() {
         return 	gridContainer;
     }
 
+    /**
+     * return col number corresponding to the header
+     * @param headerName
+     * @return
+     */
     public int getColNumberByHeaderName(String headerName) {
         int correspondingColumn = 0;
         boolean foundCol = false;
-
         startSearch("getColNumberByHeaderName");
         while (!foundCol && !stopSearch(60, "getColNumberByHeaderName")) {
             try {
@@ -85,14 +99,17 @@ public class Grid {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("column not found " + headerName);
-                // on fait rien
             }
         }
         Driver.getReport().log("info", "getColNumberByHeaderName " + headerName + " => " + String.valueOf(correspondingColumn),null,null,null,null);
         return (foundCol?correspondingColumn:0);
     }
 
+    /**
+     * return row number containing a string
+     * @param subStringInRow
+     * @return
+     */
     public int getRowNumberBySubstringInRow(String subStringInRow) {
         int correspondingRow = 0;
         boolean foundRow = false;
@@ -116,15 +133,27 @@ public class Grid {
         return (foundRow?correspondingRow:0);
     }
 
+    /**
+     * return row number containing a string in a column
+     * @param subStringInCell
+     * @param headerName
+     * @return
+     */
     public int getRowNumberBySubstringInColumn(String subStringInCell, String headerName) {
         return getRowNumberBySubstringInColumn(subStringInCell, getColNumberByHeaderName(headerName));
     }
 
-    public int getRowNumberBySubstringInColumn(String subStringInCell, int colNumberHeader) {
+    /**
+     * return row number containing a string in a column
+     * @param subStringInCell
+     * @param colNumber
+     * @return
+     */
+    public int getRowNumberBySubstringInColumn(String subStringInCell, int colNumber) {
         int correspondingRow = 0;
         boolean foundRow = false;
-        if (colNumberHeader>0) {
-            cellDataOneColAll.setParameter("COL_NUMBER", String.valueOf(colNumberHeader));
+        if (colNumber>0) {
+            cellDataOneColAll.setParameter("COL_NUMBER", String.valueOf(colNumber));
             startSearch("getRowNumberBySubstringInColumn");
             while (!foundRow && !stopSearch(60, "getRowNumberBySubstringInColumn")) {
                 try {
@@ -138,15 +167,19 @@ public class Grid {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    // on fait rien
                 }
             }
         }
-        Driver.getReport().log("info", "getRowNumberBySubstringInColumn " + subStringInCell + " colonne " + String.valueOf(colNumberHeader) + " => " + String.valueOf(correspondingRow),null,null,null,null);
+        Driver.getReport().log("info", "getRowNumberBySubstringInColumn " + subStringInCell + " colonne " + String.valueOf(colNumber) + " => " + String.valueOf(correspondingRow),null,null,null,null);
         return (foundRow?correspondingRow:0);
     }
-    
+
+    /**
+     * return row number containing a string and column number by the header
+     * @param subStringInRow
+     * @param headerName
+     * @return
+     */
     public int[] getCellRowAndColumn(String subStringInRow, String headerName) {
         Driver.getReport().log("info", "getCellRowAndColumn " + subStringInRow + " colonne " + headerName ,null,null,null,null);
         int correspondingColumn = getColNumberByHeaderName(headerName);
@@ -155,24 +188,27 @@ public class Grid {
     }
 
     /**
-     * Renvoi le nombre de ligne.
-     * @return nombre de ligne
+     * return row count in the table
+     * @return 
      */
     public int getRowCount() {
         return rowDataAll.getElementsNumber(0);
     }
 
     /**
-     * Indique si la table est displayed.
-     * @return true si la table est visible, false sinon
+     * return if the table is displayed
+     * @return 
      */
     public boolean exists() {
-        return rowDataHeaders.exists(TestProperties.implicit_wait);
+        return rowDataHeaders.exists(TestProperties.timeout);
     }
 
     /**
-     * Indique si la table contient une valeur dans un délai de timeout.
-     * @return true si la table est oui, false sinon
+     * return if the table contains a string in one row (or more)
+     * 
+     * @param value
+     * @param timeout
+     * @return
      */
     public boolean contains(String value, int timeout) {
         rowDataByContent.setParameter("VALUE_IN_ROW", value);
@@ -180,29 +216,30 @@ public class Grid {
     }
 
     /**
-     * Indique si la table contient une valeur dans un délai de TestProperties.implicit_wait.
-     * @return true si la table est oui, false sinon
+     * return if the table contains a string in one row (or more)
+     * @param value
+     * @return
      */
     public boolean contains(String value) {
         rowDataByContent.setParameter("VALUE_IN_ROW", value);
-        return rowDataByContent.exists(TestProperties.implicit_wait);
+        return rowDataByContent.exists(TestProperties.timeout);
     }
 
     /**
-     * Indique si une ligne de la table contient une valeur dans une colonne.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param subStringHeaderName nom de la colonne dans laquelle on cherche subStringInCell
-     * @return true si la ligne existe sinon false
+     * return if a column contains a string
+     * @param subStringInCell 
+     * @param subStringHeaderName 
+     * @return 
      */
     public boolean columnContains(String subStringInCell, String subStringHeaderName) {
         return columnContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName));
     }
 
     /**
-     * Indique si une ligne de la table contient une valeur dans une colonne.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param columnNumber numero de la colonne où on recherche la valeur
-     * @return true si la ligne existe sinon false
+     * return if a column contains a string
+     * @param subStringInCell
+     * @param columnNumber
+     * @return
      */
     public boolean columnContains(String subStringInCell, int columnNumber) {
         boolean foundRow = false;
@@ -224,20 +261,20 @@ public class Grid {
         return foundRow;
     }
     /**
-     * recupère la valeur d'une cellule de la colonne headerName de la ligne de la table contenant la chaine subStringInRow.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur si "pass", sinon "row not found" ou "col not found"
+     * return value in a column from a row containing a string
+     * @param subStringInRow 
+     * @param headerName 
+     * @return 
      */
     public String getCellsValue(String subStringInRow, String headerName) {
         return getCellsValue(subStringInRow, getColNumberByHeaderName(headerName));
     }
 
     /**
-     * recupère la valeur d'une cellule de la colonne headerName de la ligne de la table contenant la chaine subStringInRow.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param columnNumber colonne de la cellule dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur si "pass", sinon "row not found" ou "col not found"
+     * return value in a column from a row containing a string
+     * @param subStringInRow
+     * @param columnNumber
+     * @return
      */
     public String getCellsValue(String subStringInRow, int columnNumber) {
         String value;
@@ -261,11 +298,11 @@ public class Grid {
     }
 
     /**
-     * indique si la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si égalité, false sinon
+     * return if the value in a column from a row containing a string is equals to a value
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
+     * @return
      */
     public boolean cellsValueEquals(String subStringInRow, String headerName, String cellValue) {
         String value = this.getCellsValue(subStringInRow, headerName);
@@ -277,14 +314,14 @@ public class Grid {
     }
 
     /**
-     * indique si la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si égalité, false sinon
+     * return if the value in a column from a row containing a string is equals to a value
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
+     * @return
      */
-    public boolean cellsValueEquals(String subStringInRow, int colNumberHeader, String cellValue) {
-        String value = this.getCellsValue(subStringInRow, colNumberHeader);
+    public boolean cellsValueEquals(String subStringInRow, int colNumber, String cellValue) {
+        String value = this.getCellsValue(subStringInRow, colNumber);
         if (value.equals(cellValue)) {
             return true;
         } else {
@@ -293,11 +330,11 @@ public class Grid {
     }
 
     /**
-     * indique si la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si contenue, false sinon
+     * return if the value in a column from a row containing a string contains to a value
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
+     * @return
      */
     public boolean cellsValueContains(String subStringInRow, String headerName, String cellValue) {
         String value = this.getCellsValue(subStringInRow, headerName);
@@ -309,14 +346,14 @@ public class Grid {
     }
 
     /**
-     * indique si la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si contenue, false sinon
+     * return if the value in a column from a row containing a string contains to a value
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
+     * @return
      */
-    public boolean cellsValueContains(String subStringInRow, int colNumberHeader, String cellValue) {
-        String value = this.getCellsValue(subStringInRow, colNumberHeader);
+    public boolean cellsValueContains(String subStringInRow, int colNumber, String cellValue) {
+        String value = this.getCellsValue(subStringInRow, colNumber);
         if (value.trim().contains(cellValue.trim())) {
             return true;
         } else {
@@ -325,31 +362,31 @@ public class Grid {
     }
 
     /**
-     * recupère la valeur d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur si "pass", sinon "row not found" ou "col not found"
+     * find a row containing a value in a column and return the value of another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @return
      */
     public String getCellsValue(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName) {
         return getCellsValue(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName));
     }
 
     /**
-     * recupère la valeur d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur si "pass", sinon "row not found" ou "col not found"
+     * find a row containing a value in a column and return the value of another column
+     * @param subStringInCell
+     * @param colNumber
+     * @param colNumberCellToRead
+     * @return
      */
-    public String getCellsValue(String subStringInCell, int colNumberHeader, int colNumberCellToReadHeader) {
+    public String getCellsValue(String subStringInCell, int colNumber, int colNumberCellToRead) {
         String value;
         try {
-            int correspondingRow = getRowNumberBySubstringInColumn(subStringInCell, colNumberHeader);
+            int correspondingRow = getRowNumberBySubstringInColumn(subStringInCell, colNumber);
 
-            if (colNumberCellToReadHeader>0) {
+            if (colNumberCellToRead>0) {
                 if (correspondingRow>0 ) {
-                    cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(correspondingRow) , "COL_NUMBER", String.valueOf(colNumberCellToReadHeader)});
+                    cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(correspondingRow) , "COL_NUMBER", String.valueOf(colNumberCellToRead)});
                     value = cellDataByRowNumByColNum.getValue();
                 } else {
                     value = "row not found";
@@ -366,12 +403,12 @@ public class Grid {
 
 
     /**
-     * indique si la valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si égalité, false sinon
+     * find a row containing a value in a column and return true if the value of another column equals the value in arg
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param cellValue
+     * @return
      */
     public boolean cellsValueEquals(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String cellValue) {
         String value = this.getCellsValue(subStringInCell, subStringHeaderName, cellToReadHeaderName);
@@ -383,15 +420,15 @@ public class Grid {
     }
 
     /**
-     * indique si la valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @return true si égalité, false sinon
+     * find a row containing a value in a column and return true if the value of another column equals the value in arg
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param cellValue
+     * @return
      */
-    public boolean cellsValueEquals(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String cellValue) {
-        String value = this.getCellsValue(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader);
+    public boolean cellsValueEquals(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String cellValue) {
+        String value = this.getCellsValue(subStringInCell, colNumberSubString, colNumberCellToRead);
         if (value.equals(cellValue)) {
             return true;
         } else {
@@ -400,31 +437,31 @@ public class Grid {
     }
 
     /**
-     * recupère la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur de l'attribut si "pass", sinon "row not found" ou "col not found"
+     *  find a row containing a value in a column and return the TD attibute value of another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param attr
+     * @return
      */
     public String getCellsAttribute(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String attr) {
         return getCellsAttribute(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), attr);
     }
 
     /**
-     * recupère la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @return un tableau de 2 String. String1 = "pass" ou "error". String2 = la valeur de l'attribut si "pass", sinon "row not found" ou "col not found"
+     * find a row containing a value in a column and return the TD attibute value of another column
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param attr
+     * @return
      */
-    public String getCellsAttribute(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String attr) {
+    public String getCellsAttribute(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String attr) {
         String value;
         try {
-            if (colNumberCellToReadHeader>0) {
-                if (colNumberSubStringHeader>0 ) {
-                    cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(colNumberSubStringHeader) , "COL_NUMBER", String.valueOf(colNumberCellToReadHeader)});
+            if (colNumberCellToRead>0) {
+                if (colNumberSubString>0 ) {
+                    cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(colNumberSubString) , "COL_NUMBER", String.valueOf(colNumberCellToRead)});
                     value = cellDataByRowNumByColNum.getAttribute(attr);
                 } else {
                     value = "row not found";
@@ -441,133 +478,72 @@ public class Grid {
 
 
     /////////////////// ACTIONS
-    /**
-     * Tri ascendant d'une table en fonction d'une colonne.
-     * @param header header de la colonne sur laquelle on trie
-     */
-    public void sortAsc(String header) {
-        System.out.println("Table.sortAsc " + header);
-        rowDataHeaderSens.setParameter("HEADER_NAME", header);
-        rowDataHeader.setParameter("HEADER_NAME", header);
-        startSearch("sortAsc");
-        while (!rowDataHeaderSens.getAttribute("class").contains("triangle-1-s") && !stopSearch(30, "sortAsc")) {
-            rowDataHeader.click();
-        }
-    }
 
     /**
-     * Tri ascendant d'une table en fonction d'une colonne.
-     * @param header header de la colonne sur laquelle on trie
-     */
-    public void sortAsc(int header) {
-        System.out.println("Table.sortAsc " + header);
-        rowDataHeaderSensByNum.setParameter("HEADER_NUM", String.valueOf(header));
-        rowDataHeaderByNum.setParameter("HEADER_NUM", String.valueOf(header));
-        startSearch("sortAsc");
-        while (!rowDataHeaderSensByNum.getAttribute("class").contains("triangle-1-s") && !stopSearch(30, "sortAsc")) {
-            rowDataHeaderByNum.click();
-        }
-    }
-
-    /**
-     * Tri descendant d'une table en fonction d'une colonne.
-     * @param header header de la colonne sur laquelle on trie
-     */
-    public void sortDesc(String header) {
-        System.out.println("Table.sortDesc " + header);
-        rowDataHeaderSens.setParameter("HEADER_NAME", header);
-        rowDataHeader.setParameter("HEADER_NAME", header);
-        startSearch("sortDesc");
-        while (!rowDataHeaderSens.getAttribute("class").contains("triangle-1-n") && !stopSearch(30, "sortDesc")) {
-            rowDataHeader.click();
-        }
-    }
-
-    /**
-     * Tri descendant d'une table en fonction d'une colonne.
-     * @param header header de la colonne sur laquelle on trie
-     */
-    public void sortDesc(int header) {
-        System.out.println("Table.sortDesc " + header);
-        rowDataHeaderSensByNum.setParameter("HEADER_NUM", String.valueOf(header));
-        rowDataHeaderByNum.setParameter("HEADER_NUM", String.valueOf(header));
-        startSearch("sortDesc");
-        while (!rowDataHeaderSensByNum.getAttribute("class").contains("triangle-1-n") && !stopSearch(30, "sortDesc")) {
-            rowDataHeaderByNum.click();
-        }
-    }
-
-    /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans une ligne de la table
-     * @param headerName nom de la colonne dans laquelle on va cliquer
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * find a row continaing a string and click in cell of column in argument until one page is loaded
+     * @param subStringInRow
+     * @param headerName
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
     public void clickCell(String subStringInRow, String headerName, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         clickCell(getRowNumberBySubstringInRow(subStringInRow), getColNumberByHeaderName(headerName), pageObjectToBeLoadedAfterClick, assertLoadedMethod);
     }
 
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans une ligne de la table
-     * @param colNumberHeader colonne dans laquelle on va cliquer
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * find a row continaing a string and click in cell of column in argument until one page is loaded
+     * @param subStringInRow
+     * @param colNumber
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
-    public void clickCell(String subStringInRow, int colNumberHeader, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
-        clickCell(getRowNumberBySubstringInRow(subStringInRow), colNumberHeader, pageObjectToBeLoadedAfterClick, assertLoadedMethod);
+    public void clickCell(String subStringInRow, int colNumber, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
+        clickCell(getRowNumberBySubstringInRow(subStringInRow), colNumber, pageObjectToBeLoadedAfterClick, assertLoadedMethod);
     }
 
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans une ligne de la table
-     * @param headerName nom de la colonne dans laquelle on va cliquer
+     * find a row continaing a string and click in cell of column in argument
+     * @param subStringInRow
+     * @param headerName
      */
     public void clickCell(String subStringInRow, String headerName) {
         clickCell(subStringInRow, headerName, null, null);
     }
 
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans une ligne de la table
-     * @param colNumberHeader nom de la colonne dans laquelle on va cliquer
+     * find a row continaing a string and click in cell of column in argument
+     * @param subStringInRow
+     * @param colNumber
      */
-    public void clickCell(String subStringInRow, int colNumberHeader) {
-        clickCell(subStringInRow, colNumberHeader, null, null);
+    public void clickCell(String subStringInRow, int colNumber) {
+        clickCell(subStringInRow, colNumber, null, null);
     }
 
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param rowNumber numero de la ligne, commence à 1
-     * @param headerName nom de la colonne dans laquelle on va cliquer
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click in cell of column in argument and row number in argument until one page is loaded
+     * @param rowNumber
+     * @param headerName
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
     public void clickCell(int rowNumber, String headerName, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         clickCell(rowNumber, getColNumberByHeaderName(headerName), pageObjectToBeLoadedAfterClick, assertLoadedMethod);
     }
 
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param rowNumber numero de la ligne, commence à 1
-     * @param colNumberHeader nom de la colonne dans laquelle on va cliquer
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click in cell of column in argument and row number in argument until one page is loaded
+     * @param rowNumber
+     * @param colNumber
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
-    public void clickCell(int rowNumber, int colNumberHeader, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
+    public void clickCell(int rowNumber, int colNumber, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         System.out.println("Table.clickCell ");
         String result = "error";
-        String errorMessage = "ligne " + rowNumber + " non trouvée";
+        String errorMessage ;
         try {
-            if (colNumberHeader>0) {
-                cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(rowNumber) , "COL_NUMBER", String.valueOf(colNumberHeader)});
+            if (colNumber>0) {
+                cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(rowNumber) , "COL_NUMBER", String.valueOf(colNumber)});
                 if (pageObjectToBeLoadedAfterClick!=null) {
                     cellDataByRowNumByColNum.click(pageObjectToBeLoadedAfterClick, assertLoadedMethod);
                 } else {
@@ -581,25 +557,24 @@ public class Grid {
         } catch (Exception e) {
             errorMessage = e.getMessage();
         }
-        Driver.getReport().log(result, "clickCell " + colNumberHeader + " " + rowNumber, cellDataByRowNumByColNum.getName(), null , null, errorMessage);
+        Driver.getReport().log(result, "clickCell " + colNumber + " " + rowNumber, cellDataByRowNumByColNum.getName(), null , null, errorMessage);
     }
+
     /**
-     * clique dans la cellule headerName de la première ligne contenant la valeur subStringInRow (la recherche de la chaine n'étant pas limitée à la colonne headerName).
-     * Le résultat est tracé dans le rapport.
-     * @param rowNumber numero de la ligne, commence à 1
-     * @param headerName nom de la colonne dans laquelle on va cliquer
+     * click in cell of column in argument and row number in argument
+     * @param rowNumber
+     * @param headerName
      */
     public void clickCell(int rowNumber, String headerName) {
         clickCell(rowNumber, headerName, null, null);
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInRow. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param correspondingRow numero de la ligne
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click on an element of row in argument that contains text or attribute "action" until one page is loaded
+     * @param correspondingRow
+     * @param action
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
     public void actionOnRow(int correspondingRow, String action, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         System.out.println("Table.actionOnRow ");
@@ -624,22 +599,20 @@ public class Grid {
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInRow. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param correspondingRow numero de la ligne
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
+     * click on an element of row in argument that contains text or attribute "action"
+     * @param correspondingRow
+     * @param action
      */
     public void actionOnRow(int correspondingRow, String action) {
         actionOnRow(correspondingRow, action, null, null);
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInRow. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine que la ligne doit contenir
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click on an element of a row containing a string in argument that contains text or attribute "action" until one page is loaded
+     * @param subStringInRow
+     * @param action
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
     public void actionOnRow(String subStringInRow, String action, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         System.out.println("Table.actionOnRow ");
@@ -665,30 +638,28 @@ public class Grid {
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInRow. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine que la ligne doit contenir
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
+     * click on an element of a row containing a string in argument that contains text or attribute "action"
+     * @param subStringInRow
+     * @param action
      */
     public void actionOnRow(String subStringInRow, String action) {
         actionOnRow(subStringInRow, action, null, null);
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInCell dans la colonne subStringHeaderName. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param colNumberSubStringHeader nom de la colonne dans laquelle on cherche subStringInCell
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click on an element of a row containing a string in a column in argument that contains text or attribute "action" until one page is loaded
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param action
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
-    public void actionOnRow(String subStringInCell, int colNumberSubStringHeader, String action, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
+    public void actionOnRow(String subStringInCell, int colNumberSubString, String action, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         System.out.println("Table.actionOnRow ");
         String result = "error";
         String errorMessage = "ligne " + subStringInCell + " non trouvée";
         try {
-            int correspondingRow = getRowNumberBySubstringInColumn(subStringInCell, colNumberSubStringHeader);
+            int correspondingRow = getRowNumberBySubstringInColumn(subStringInCell, colNumberSubString);
             if (correspondingRow>0) {
                 cellActionByRowNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(correspondingRow), "ATTR_ACTION", action});
                 if (pageObjectToBeLoadedAfterClick!=null) {
@@ -707,34 +678,32 @@ public class Grid {
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInCell dans la colonne subStringHeaderName. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param subStringHeaderName nom de la colonne dans laquelle on cherche subStringInCell
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
-     * @param pageObjectToBeLoadedAfterClick class pageObjects de la page qui doit être chargée après le click
-     * @param assertLoadedMethod nom de la méthode de la class pageObjects qui renvoie true quand la page est chargée après le click
+     * click on an element of a row containing a string in argument that contains text or attribute "action" until one page is loaded
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param action
+     * @param pageObjectToBeLoadedAfterClick
+     * @param assertLoadedMethod
      */
     public void actionOnRow(String subStringInCell, String subStringHeaderName, String action, Class pageObjectToBeLoadedAfterClick, String assertLoadedMethod) {
         actionOnRow(subStringInCell, getColNumberByHeaderName(subStringHeaderName), action, pageObjectToBeLoadedAfterClick, assertLoadedMethod);
     }
 
     /**
-     * Réalise une action sur une ligne de la table contenant une chaine de données subStringInCell dans la colonne subStringHeaderName. L'action est identifiée par tout ou partie de la valeur d'un attribut de son élément html.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param subStringHeaderName nom de la colonne dans laquelle on cherche subStringInCell
-     * @param action tout ou partie de la valeur d'un attribut de l'élément de l'action (par exemple "common-pencil", "editer")
+     * click on an element of a row containing a string in argument that contains text or attribute "action"
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param action
      */
     public void actionOnRow(String subStringInCell, String subStringHeaderName, String action) {
         actionOnRow(subStringInCell, subStringHeaderName, action, null, null);
     }
 
     //////////////////////////////// ASSERTIONS
+
     /**
-     * vérifie qu'une ligne de la table contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans la colonne subStringHeaderName
+     * assert a row contains a string
+     * @param subStringInRow
      */
     public void assertContains(String subStringInRow) {
         startSearch("assertContains");
@@ -746,9 +715,8 @@ public class Grid {
     }
 
     /**
-     * vérifie qu'aucune ligne de la table ne contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow valeur que l'on cherche dans la colonne subStringHeaderName
+     * assert none row contains a string
+     * @param subStringInRow
      */
     public void assertNotContains(String subStringInRow) {
         startSearch("asserNotContains");
@@ -760,515 +728,499 @@ public class Grid {
     }
 
     /**
-     * vérifie que la cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient l'élément element.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param element element attendu dans la cellule
+     * find a row that contains a string in one column and assert that another column contains an element
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param element
      */
-    public void assertCellsContainsElement(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, Element element) {
-        assertCellsContainsElement( subStringInCell,  colNumberSubStringHeader,  colNumberCellToReadHeader,  element, false);
+    public void assertCellsContainsElement(String subStringInCell, int colNumberSubString, int colNumberCellToRead, Element element) {
+        assertCellsContainsElement( subStringInCell,  colNumberSubString,  colNumberCellToRead,  element, false);
     }
 
     /**
-     * vérifie que la cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient l'élément element.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param element element attendu dans la cellule
+     * find a row that contains a string in one column and assert that another column contains an element
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param element
      */
     public void assertCellsContainsElement(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, Element element) {
         assertCellsContainsElement( subStringInCell,  subStringHeaderName,  cellToReadHeaderName,  element, false);
     }
 
     /**
-     * vérifie que la cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient l'élément element.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param element element attendu dans la cellule
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * find a row that contains a string in one column and assert that another column contains an element
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param element
+     * @param justWarning
      */
     public void assertCellsContainsElement(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, Element element, boolean justWarning) {
         assertCellsContainsElement(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), element, justWarning);
     }
 
     /**
-     * vérifie que la cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient l'élément element.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param element element attendu dans la cellule
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * find a row that contains a string in one column and assert that another column contains an element
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param element
+     * @param justWarning
      */
-    public void assertCellsContainsElement(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, Element element, boolean justWarning) {
+    public void assertCellsContainsElement(String subStringInCell, int colNumberSubString, int colNumberCellToRead, Element element, boolean justWarning) {
         System.out.println("Table.assertCellsContainsElement ");
         String status = (justWarning ? "warning" : "failnext");
         try {
-            int row = getRowNumberBySubstringInColumn(subStringInCell, colNumberSubStringHeader);
-            Element cell = cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(row) , "COL_NUMBER", String.valueOf(colNumberCellToReadHeader)});
+            int row = getRowNumberBySubstringInColumn(subStringInCell, colNumberSubString);
+            Element cell = cellDataByRowNumByColNum.setParameter(new String[] {"ROW_NUMBER", String.valueOf(row) , "COL_NUMBER", String.valueOf(colNumberCellToRead)});
             element.setContainer(cell);
-            if (element.exists(TestProperties.implicit_wait)) {
+            if (element.exists(TestProperties.timeout)) {
                 status = "pass";
             }
         } catch (Exception e) {
-            // on fait rien
         }
-        Driver.getReport().log(status, "assertCellsContainsElement " + colNumberCellToReadHeader + " " + subStringInCell, cellDataByRowNumByColNum.getName(), element.getName(), "", null);
+        Driver.getReport().log(status, "assertCellsContainsElement " + colNumberCellToRead + " " + subStringInCell, cellDataByRowNumByColNum.getName(), element.getName(), "", null);
     }
 
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
      */
-    public void assertCellsValueEquals(String subStringInRow, int colNumberHeader, String cellValue) {
-        assertCellsValueEquals(subStringInRow, colNumberHeader, cellValue, false);
+    public void assertCellsValueEquals(String subStringInRow, int colNumber, String cellValue) {
+        assertCellsValueEquals(subStringInRow, colNumber, cellValue, false);
     }
 
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
      */
     public void assertCellsValueEquals(String subStringInRow, String headerName, String cellValue) {
         assertCellsValueEquals(subStringInRow, headerName, cellValue, false);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
+     * @param justWarning
      */
     public void assertCellsValueEquals(String subStringInRow, String headerName, String cellValue, boolean justWarning) {
         assertCellsValueEquals(subStringInRow, getColNumberByHeaderName(headerName), cellValue, justWarning);
     }
 
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow vaut cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
+     * @param justWarning
      */
-    public void assertCellsValueEquals(String subStringInRow, int colNumberHeader, String cellValue, boolean justWarning) {
+    public void assertCellsValueEquals(String subStringInRow, int colNumber, String cellValue, boolean justWarning) {
         System.out.println("Table.assertCellsValueEquals ");
         String status = "pass";
         startSearch("assertCellsValueEquals");
-        String value = getCellsValue(subStringInRow, colNumberHeader);
+        String value = getCellsValue(subStringInRow, colNumber);
         while (!value.trim().equals(cellValue.trim()) && !stopSearch(30,"assertCellsValueEquals")) {
-            value = getCellsValue(subStringInRow, colNumberHeader);
+            value = getCellsValue(subStringInRow, colNumber);
         }
         if (!value.trim().equals(cellValue.trim())) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsValueEquals " + colNumberHeader + " " + subStringInRow, cellDataByRowNumByColNum.getName(), cellValue, value, null);
+        Driver.getReport().log(status, "assertCellsValueEquals " + colNumber + " " + subStringInRow, cellDataByRowNumByColNum.getName(), cellValue, value, null);
     }
 
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param cellValue
      */
-    public void assertCellsValueEquals(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String cellValue) {
-        assertCellsValueEquals(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader, cellValue, false);
+    public void assertCellsValueEquals(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String cellValue) {
+        assertCellsValueEquals(subStringInCell, colNumberSubString, colNumberCellToRead, cellValue, false);
     }
+
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param cellValue
      */
     public void assertCellsValueEquals(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String cellValue) {
         assertCellsValueEquals(subStringInCell, subStringHeaderName, cellToReadHeaderName, cellValue, false);
     }
+
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param cellValue
+     * @param justWarning
      */
     public void assertCellsValueEquals(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String cellValue, boolean justWarning) {
         assertCellsValueEquals(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), cellValue, justWarning);
     }
+
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell vaut cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param cellValue
+     * @param justWarning
      */
-    public void assertCellsValueEquals(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String cellValue, boolean justWarning) {
+    public void assertCellsValueEquals(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String cellValue, boolean justWarning) {
         System.out.println("Table.assertCellsValueEquals ");
         String status = "pass";
         startSearch("assertCellsValueEquals");
-        String value = getCellsValue(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader);
+        String value = getCellsValue(subStringInCell, colNumberSubString, colNumberCellToRead);
         while (!value.trim().equals(cellValue.trim()) && !stopSearch(30,"assertCellsValueEquals")) {
-            value = getCellsValue(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader);
+            value = getCellsValue(subStringInCell, colNumberSubString, colNumberCellToRead);
         }
         if (!value.trim().equals(cellValue.trim())) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsValueEquals " + colNumberCellToReadHeader + " " + subStringInCell, cellDataByRowNumByColNum.getName(), cellValue, value, null);
+        Driver.getReport().log(status, "assertCellsValueEquals " + colNumberCellToRead + " " + subStringInCell, cellDataByRowNumByColNum.getName(), cellValue, value, null);
     }
 
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert the cell in row and column number in argument contains a value
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
      */
-    public void assertCellsValueContains(String subStringInRow, int colNumberHeader, String cellValue) {
-        assertCellsValueContains( subStringInRow,  colNumberHeader,  cellValue, false);
+    public void assertCellsValueContains(String subStringInRow, int colNumber, String cellValue) {
+        assertCellsValueContains( subStringInRow,  colNumber,  cellValue, false);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     *  assert the cell in row and column number in argument contains a value
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
      */
     public void assertCellsValueContains(String subStringInRow, String headerName, String cellValue) {
         assertCellsValueContains( subStringInRow,  headerName,  cellValue, false);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
+     * @param justWarning
      */
     public void assertCellsValueContains(String subStringInRow, String headerName, String cellValue, boolean justWarning) {
         assertCellsValueContains(subStringInRow, getColNumberByHeaderName(headerName), cellValue, justWarning);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow contient cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string contains a value in another column
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
+     * @param justWarning
      */
-    public void assertCellsValueContains(String subStringInRow, int colNumberHeader, String cellValue, boolean justWarning) {
+    public void assertCellsValueContains(String subStringInRow, int colNumber, String cellValue, boolean justWarning) {
         System.out.println("Table.assertCellsValueContains ");
         String status = "pass";
         startSearch("assertCellsValueContains");
-        String value = getCellsValue(subStringInRow, colNumberHeader);
+        String value = getCellsValue(subStringInRow, colNumber);
         while (!value.contains(cellValue) && !stopSearch(30,"assertCellsValueContains")) {
-            value = getCellsValue(subStringInRow, colNumberHeader);
+            value = getCellsValue(subStringInRow, colNumber);
         }
         if (!value.contains(cellValue)) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsValueContains " + colNumberHeader + " " + subStringInRow, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
+        Driver.getReport().log(status, "assertCellsValueContains " + colNumber + " " + subStringInRow, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
     }
 
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param cellValue
      */
     public void assertCellsValueContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String cellValue) {
         assertCellsValueContains( subStringInCell,  subStringHeaderName,  cellToReadHeaderName,  cellValue, false);
     }
-    /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     */
-    public void assertCellsValueContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String cellValue) {
-        assertCellsValueContains( subStringInCell,  colNumberSubStringHeader,  colNumberCellToReadHeader,  cellValue, false);
-    }
 
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param cellValue
+     */
+    public void assertCellsValueContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String cellValue) {
+        assertCellsValueContains( subStringInCell,  colNumberSubString,  colNumberCellToRead,  cellValue, false);
+    }
+
+
+    /**
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param cellValue
+     * @param justWarning
      */
     public void assertCellsValueContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String cellValue, boolean justWarning) {
         assertCellsValueContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), cellValue, justWarning);
     }
+
     /**
-     * vérifie que valeur de cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell contient cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string in a column contains a value in another column
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param cellValue
+     * @param justWarning
      */
-    public void assertCellsValueContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String cellValue, boolean justWarning) {
+    public void assertCellsValueContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String cellValue, boolean justWarning) {
         System.out.println("Table.assertCellsValueContains ");
         String status = "pass";
         startSearch("assertCellsValueContains");
-        String value = getCellsValue(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader);
+        String value = getCellsValue(subStringInCell, colNumberSubString, colNumberCellToRead);
         while (!value.contains(cellValue) && !stopSearch(30,"assertCellsValueContains")) {
-            value = getCellsValue(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader);
+            value = getCellsValue(subStringInCell, colNumberSubString, colNumberCellToRead);
         }
         if (!value.contains(cellValue)) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsValueContains " + colNumberCellToReadHeader + " " + subStringInCell, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
+        Driver.getReport().log(status, "assertCellsValueContains " + colNumberCellToRead + " " + subStringInCell, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
     }
 
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow ne contient pas cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string does not contain a value in another column
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
      */
-    public void assertCellsValueNotContains(String subStringInRow, int colNumberHeader, String cellValue) {
-        assertCellsValueNotContains( subStringInRow,  colNumberHeader,  cellValue, false);
+    public void assertCellsValueNotContains(String subStringInRow, int colNumber, String cellValue) {
+        assertCellsValueNotContains( subStringInRow,  colNumber,  cellValue, false);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow ne contient pas cellValue.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
+     * assert a row containing a string does not contain a value in another column
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
      */
     public void assertCellsValueNotContains(String subStringInRow, String headerName, String cellValue) {
         assertCellsValueNotContains( subStringInRow,  headerName,  cellValue, false);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow ne contient pas cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param headerName colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string does not contain a value in another column
+     * @param subStringInRow
+     * @param headerName
+     * @param cellValue
+     * @param justWarning
      */
     public void assertCellsValueNotContains(String subStringInRow, String headerName, String cellValue, boolean justWarning) {
         assertCellsValueNotContains(subStringInRow, getColNumberByHeaderName(headerName), cellValue, justWarning);
     }
+
     /**
-     * vérifie que la valeur de la colonne headerName de la ligne contenant subStringInRow ne contient pas cellValue.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInRow chaine pour identifier la ligne
-     * @param colNumberHeader colonne de la cellule dont on veut la valeur
-     * @param cellValue valeur attendue
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert a row containing a string does not contain a value in another column
+     * @param subStringInRow
+     * @param colNumber
+     * @param cellValue
+     * @param justWarning
      */
-    public void assertCellsValueNotContains(String subStringInRow, int colNumberHeader, String cellValue, boolean justWarning) {
+    public void assertCellsValueNotContains(String subStringInRow, int colNumber, String cellValue, boolean justWarning) {
         System.out.println("Table.assertCellsValueNotContains ");
         String status = "pass";
         startSearch("assertCellsValueNotContains");
-        String value = getCellsValue(subStringInRow, colNumberHeader);
+        String value = getCellsValue(subStringInRow, colNumber);
         while (value.contains(cellValue) && !stopSearch(30,"assertCellsValueNotContains")) {
-            value = getCellsValue(subStringInRow, colNumberHeader);
+            value = getCellsValue(subStringInRow, colNumber);
         }
         if (value.contains(cellValue)) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsValueNotEquals " + colNumberHeader+ " " + subStringInRow, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
+        Driver.getReport().log(status, "assertCellsValueNotEquals " + colNumber+ " " + subStringInRow, cellDataByRowNumByColNum.getName(),  cellValue, value, null);
     }
 
     /**
-     * vérifie qu'une ligne de la table contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param subStringHeaderName nom de la colonne dans laquelle on cherche subStringInCell
+     * assert a column contains a value
+     * @param subStringInCell
+     * @param subStringHeaderName
      */
     public void assertContains(String subStringInCell, String subStringHeaderName) {
         assertContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName));
     }
+
     /**
-     * vérifie qu'une ligne de la table contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param colNumberSubStringHeader nom de la colonne dans laquelle on cherche subStringInCell
+     * assert a column contains a value
+     * @param subStringInCell
+     * @param colNumberSubString
      */
-    public void assertContains(String subStringInCell, int colNumberSubStringHeader) {
+    public void assertContains(String subStringInCell, int colNumberSubString) {
         startSearch("assertContains");
-        boolean contains = columnContains(subStringInCell, colNumberSubStringHeader);
+        boolean contains = columnContains(subStringInCell, colNumberSubString);
         while (!contains && !stopSearch(30,"assertContains")) {
-            contains = columnContains(subStringInCell, colNumberSubStringHeader);
+            contains = columnContains(subStringInCell, colNumberSubString);
         }
-        Driver.getReport().log((contains?"pass":"fail"), "assertContains " + subStringInCell , String.valueOf(colNumberSubStringHeader), null , null, null);
+        Driver.getReport().log((contains?"pass":"fail"), "assertContains " + subStringInCell , String.valueOf(colNumberSubString), null , null, null);
     }
 
     /**
-     * vérifie qu'aucune ligne de la table ne contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param subStringHeaderName nom de la colonne dans laquelle on cherche subStringInCell
+     * assert a column does not contain a value
+     * @param subStringInCell
+     * @param subStringHeaderName
      */
     public void assertNotContains(String subStringInCell, String subStringHeaderName) {
         assertNotContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName));
     }
+
     /**
-     * vérifie qu'aucune ligne de la table ne contient une valeur dans une colonne.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell valeur que l'on cherche dans la colonne subStringHeaderName
-     * @param colNumberSubStringHeader nom de la colonne dans laquelle on cherche subStringInCell
+     * assert a column does not contain a value
+     * @param subStringInCell
+     * @param colNumberSubString
      */
-    public void assertNotContains(String subStringInCell, int colNumberSubStringHeader) {
+    public void assertNotContains(String subStringInCell, int colNumberSubString) {
         startSearch("asserNotContains");
-        boolean contains = columnContains(subStringInCell, colNumberSubStringHeader);
+        boolean contains = columnContains(subStringInCell, colNumberSubString);
         while (contains && !stopSearch(30,"asserNotContains")) {
-            contains = columnContains(subStringInCell, colNumberSubStringHeader);
+            contains = columnContains(subStringInCell, colNumberSubString);
         }
-        Driver.getReport().log((!contains?"pass":"fail"), "asserNotContains " + subStringInCell , String.valueOf(colNumberSubStringHeader), null , null, null);
+        Driver.getReport().log((!contains?"pass":"fail"), "asserNotContains " + subStringInCell , String.valueOf(colNumberSubString), null , null, null);
     }
 
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue tout ou partie de la valeur attendu de l'attribut
+     * assert the attribute of TD in the column in argument of a row containing a string in a column contains a value
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param attr
+     * @param attributeValue
      */
-    public void assertCellsAttributeContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String attr, String attributeValue) {
-        assertCellsAttributeContains( subStringInCell,  colNumberSubStringHeader,  colNumberCellToReadHeader,  attr,  attributeValue, false);
+    public void assertCellsAttributeContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String attr, String attributeValue) {
+        assertCellsAttributeContains( subStringInCell,  colNumberSubString,  colNumberCellToRead,  attr,  attributeValue, false);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue tout ou partie de la valeur attendu de l'attribut
+     * assert the attribute of TD in the column in argument of a row containing a string in a column contains a value
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param attr
+     * @param attributeValue
      */
     public void assertCellsAttributeContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String attr, String attributeValue) {
         assertCellsAttributeContains( subStringInCell,  subStringHeaderName,  cellToReadHeaderName,  attr,  attributeValue, false);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue tout ou partie de la valeur attendu de l'attribut
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert the attribute of TD in the column in argument of a row containing a string in a column contains a value
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param attr
+     * @param attributeValue
+     * @param justWarning
      */
     public void assertCellsAttributeContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String attr, String attributeValue, boolean justWarning) {
         assertCellsAttributeContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), attr, attributeValue, justWarning);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName contient la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue tout ou partie de la valeur attendu de l'attribut
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert the attribute of TD in the column in argument of a row containing a string in a column contains a value
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param attr
+     * @param attributeValue
+     * @param justWarning
      */
-    public void assertCellsAttributeContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String attr, String attributeValue, boolean justWarning) {
+    public void assertCellsAttributeContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String attr, String attributeValue, boolean justWarning) {
         System.out.println("Table.assertCellsAttributeContains ");
         String status = "pass";
         startSearch("assertCellsAttributeContains");
-        String value = getCellsAttribute(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader, attr);
+        String value = getCellsAttribute(subStringInCell, colNumberSubString, colNumberCellToRead, attr);
         while (!value.contains(attributeValue) && !stopSearch(30,"assertCellsAttributeContains")) {
-            value = getCellsAttribute(subStringInCell, colNumberSubStringHeader, colNumberCellToReadHeader, attr);
+            value = getCellsAttribute(subStringInCell, colNumberSubString, colNumberCellToRead, attr);
         }
         if (!value.contains(attributeValue)) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsAttributeContains " + colNumberCellToReadHeader + " " + subStringInCell, cellDataByRowNumByColNum.getName(),  attributeValue, value, null);
+        Driver.getReport().log(status, "assertCellsAttributeContains " + colNumberCellToRead + " " + subStringInCell, cellDataByRowNumByColNum.getName(),  attributeValue, value, null);
     }
 
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName ne contient pas la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue sous-chaine non attendue dans la valeur de l'attribut
+     * assert the attribute of TD in the column in argument of a row containing a string in a column does not contain a value
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param attr
+     * @param attributeValue
      */
-    public void assertCellsAttributeNotContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String attr, String attributeValue) {
-        assertCellsAttributeNotContains( subStringInCell,  colNumberSubStringHeader,  colNumberCellToReadHeader,  attr,  attributeValue, false);
+    public void assertCellsAttributeNotContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String attr, String attributeValue) {
+        assertCellsAttributeNotContains( subStringInCell,  colNumberSubString,  colNumberCellToRead,  attr,  attributeValue, false);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName ne contient pas la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport, le test s'arrête en cas d'erreur.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue sous-chaine non attendue dans la valeur de l'attribut
+     * assert the attribute of TD in the column in argument of a row containing a string in a column does not contain a value
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param attr
+     * @param attributeValue
      */
     public void assertCellsAttributeNotContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String attr, String attributeValue) {
         assertCellsAttributeNotContains( subStringInCell,  subStringHeaderName,  cellToReadHeaderName,  attr,  attributeValue, false);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName ne contient pas la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param subStringHeaderName colonne de la ligne qui doit contenir subStringInCell
-     * @param cellToReadHeaderName colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue sous-chaine non attendue dans la valeur de l'attribut
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert the attribute of TD in the column in argument of a row containing a string in a column does not contain a value
+     * @param subStringInCell
+     * @param subStringHeaderName
+     * @param cellToReadHeaderName
+     * @param attr
+     * @param attributeValue
+     * @param justWarning
      */
     public void assertCellsAttributeNotContains(String subStringInCell, String subStringHeaderName, String cellToReadHeaderName, String attr, String attributeValue, boolean justWarning) {
         assertCellsAttributeNotContains(subStringInCell, getColNumberByHeaderName(subStringHeaderName), getColNumberByHeaderName(cellToReadHeaderName), attr, attributeValue, justWarning);
     }
+
     /**
-     * vérifie que la valeur de l'attribut attr d'une cellule de la colonne cellToReadHeaderName de la ligne de la table dont la colonne subStringHeaderName ne contient pas la chaine subStringInCell.
-     * Le résultat est tracé dans le rapport.
-     * @param subStringInCell chaine pour identifier la ligne
-     * @param colNumberSubStringHeader colonne de la ligne qui doit contenir subStringInCell
-     * @param colNumberCellToReadHeader colonne de la cellule dont on veut la valeur
-     * @param attr attribut dont on veut la valeur
-     * @param attributeValue sous-chaine non attendue dans la valeur de l'attribut
-     * @param justWarning true si tracer l'echec en warning, false si tracer l'echec en fail auquel cas le test s'arrête
+     * assert the attribute of TD in the column in argument of a row containing a string in a column does not contain a value
+     * @param subStringInCell
+     * @param colNumberSubString
+     * @param colNumberCellToRead
+     * @param attr
+     * @param attributeValue
+     * @param justWarning
      */
-    public void assertCellsAttributeNotContains(String subStringInCell, int colNumberSubStringHeader, int colNumberCellToReadHeader, String attr, String attributeValue, boolean justWarning) {
+    public void assertCellsAttributeNotContains(String subStringInCell, int colNumberSubString, int colNumberCellToRead, String attr, String attributeValue, boolean justWarning) {
         System.out.println("Table.assertCellsAttributeNotContains ");
         String status = "pass";
         startSearch("assertCellsAttributeNotContains");
-        String value = getCellsAttribute(subStringInCell,colNumberSubStringHeader, colNumberCellToReadHeader, attr);
+        String value = getCellsAttribute(subStringInCell,colNumberSubString, colNumberCellToRead, attr);
         while (value.contains(attributeValue) && !stopSearch(30,"assertCellsAttributeNotContains")) {
-            value = getCellsAttribute(subStringInCell,colNumberSubStringHeader, colNumberCellToReadHeader, attr);
+            value = getCellsAttribute(subStringInCell,colNumberSubString, colNumberCellToRead, attr);
         }
         if (value.contains(attributeValue)) {
             status = (justWarning?"warning":"failnext");
         }
-        Driver.getReport().log(status, "assertCellsAttributeNotContains " + colNumberCellToReadHeader+ " " + subStringInCell, cellDataByRowNumByColNum.getName(),  attributeValue, value, null);
+        Driver.getReport().log(status, "assertCellsAttributeNotContains " + colNumberCellToRead+ " " + subStringInCell, cellDataByRowNumByColNum.getName(),  attributeValue, value, null);
     }
 
     /**
-     * Verifie le nombre de ligne.
+     * assert row count in the table
      */
     public void assertRowCount(int nbRow) {
         int i = 0;

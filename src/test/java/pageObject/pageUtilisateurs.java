@@ -1,9 +1,7 @@
 package pageObject;
 
-import driver.Driver;
 import element.Element;
-import element.Formulaire;
-import element.Loader;
+import element.Form;
 import org.openqa.selenium.By;
 import util.TestProperties;
 
@@ -36,7 +34,7 @@ public class pageUtilisateurs {
 
 
     public static void ajouterNouvelUtilisateur(String dataSet, int jddNum) {
-        Formulaire.set(pageUtilisateurs.class, dataSet, jddNum);
+        Form.runDataSet(pageUtilisateurs.class, "set", "", dataSet, jddNum);
         valider.click();
     }
 

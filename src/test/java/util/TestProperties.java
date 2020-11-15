@@ -11,8 +11,7 @@ public class TestProperties {
     public static String browser;
     public static int browser_width;
     public static int browser_heigth;
-    public static int implicit_wait;
-    public static String sistemaUrl;
+    public static int timeout;
     public static String download_rep;
     public static String image_temp_rep;
     public static String baseURL;
@@ -27,7 +26,7 @@ public class TestProperties {
             browser = prop.getProperty("browser");
             browser_width = Integer.parseInt(prop.getProperty("browser_width"));
             browser_heigth = Integer.parseInt(prop.getProperty("browser_heigth"));
-            implicit_wait = Integer.parseInt(prop.getProperty("implicit_wait"));
+            timeout = Integer.parseInt(prop.getProperty("timeout"));
             download_rep = prop.getProperty("download_rep");
             image_temp_rep = prop.getProperty("image_temp_rep");
             baseURL = prop.getProperty("baseURL");

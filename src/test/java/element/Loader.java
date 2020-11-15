@@ -7,12 +7,16 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import util.TestProperties;
 
 import java.time.LocalDateTime;
 
 public class Loader {
-    private static By loader1 = By.id("loader");
+    private static By loader1 = By.id("set the right loactor to find your loader in your page");
 
+    /**
+     * wait while JS runs on the page
+     */
     public static void waitUntilJSReady() {
         LocalDateTime dateStartSearch = LocalDateTime.now();
         // js complete
@@ -61,7 +65,7 @@ public class Loader {
     }
 
     /**
-     * Attend que les loaders ne soient plus displayed :2 types de loader sont identifes dans cette classe, correspondant aux xpath //span[contains(@class,'spinner-loader')] et //div[@id='uiGridLoader']
+     * wait until loader is displayed
      */
     public static void waitNotVisible() {
         waitUntilJSReady();
@@ -84,17 +88,16 @@ public class Loader {
 
 
     /**
-     * Attend que les loaders ne soient plus displayed :2 types de loader sont identifes dans cette classe, correspondant aux xpath //span[contains(@class,'spinner-loader')] et //div[@id='uiGridLoader']
-     * et que tous les éléments en paramètres soient chargés
-     * @param elements liste des éléments dont on attend le chargement après disparition des loaders
-     * @return true si tout est chargé
+     * wait until no loader is displayed and all elements in argument are displayed
+     * @param elements
+     * @return
      */
     public static boolean waitNotVisibleAndAllElementsLoaded(Element[] elements) {
         boolean loaded = true;
         waitNotVisible();
         for (Element element: elements
              ) {
-            if (!element.loaded()) {
+            if (!element.loaded(TestProperties.timeout)) {
                 loaded = false;
                 break;
             }
@@ -104,10 +107,9 @@ public class Loader {
     }
 
     /**
-     * Attend que les loaders ne soient plus displayed :2 types de loader sont identifes dans cette classe, correspondant aux xpath //span[contains(@class,'spinner-loader')] et //div[@id='uiGridLoader']
-     * et que au moins 1 élément en paramètres soient chargés
-     * @param elements liste des éléments dont on attend qu'au moins 1 s'affiche après disparition des loaders
-     * @return true si 1 élément est chargé
+     * wait until no loader is displayed and at least one elements in argument is displayed
+     * @param elements
+     * @return
      */
     public static boolean waitNotVisibleAndAtLeastOneElementLoaded(Element[] elements) {
         waitNotVisible();
@@ -115,9 +117,9 @@ public class Loader {
     }
 
     /**
-     * Attend que au moins 1 élément en paramètres soient chargés
-     * @param elements liste des éléments dont on attend qu'au moins 1 s'affiche après disparition des loaders
-     * @return renvoi le premier élément chargé
+     * wait until at least one elements in argument is loaded
+     * @param elements
+     * @return
      */
     public static Element waitAtLeastOneElementLoaded(Element[] elements) {
         Element loadElement = null;
@@ -136,9 +138,9 @@ public class Loader {
     }
 
     /**
-     * Attend que au moins 1 élément en paramètres soient chargés
-     * @param elements liste des éléments dont on attend qu'au moins 1 s'affiche après disparition des loaders
-     * @return renvoi le premier élément chargé
+     * wait until no loader is displayed and at least one elements in argument is displayed
+     * @param elements
+     * @return
      */
     public static Element waitAtLeastOneElementLoadedAndDisplayed(Element[] elements) {
         Element loadElement = null;

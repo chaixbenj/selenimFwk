@@ -9,14 +9,32 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 public class CsvUtil {
+    /**
+     * load first row of a csv in a hashmap
+     * @param dataSetName
+     * @return
+     */
     public static LinkedHashMap<String, String> recordToHash(String dataSetName) {
         return recordToHash(dataSetName, 1, ";");
     }
 
+    /**
+     * load one row of a csv in a hashmap
+     * @param dataSetName
+     * @param rowNumber
+     * @return
+     */
     public static LinkedHashMap<String, String> recordToHash(String dataSetName, int rowNumber) {
         return recordToHash(dataSetName, rowNumber, ";");
     }
 
+    /**
+     * load one row of a csv in a hashmap
+     * @param dataSetName
+     * @param rowNumber
+     * @param separator
+     * @return
+     */
     public static LinkedHashMap<String, String> recordToHash(String dataSetName, int rowNumber, String separator) {
         LinkedHashMap<String, String> record = new LinkedHashMap<String, String>();
         try {

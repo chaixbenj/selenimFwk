@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-
+/**
+ * class Element extends that class. Class element allows to make assertion and actions, this class manage the way we find element in the DOM.
+ */
 class BaseElement {
     private String name;
     private String notValuedName;
@@ -20,13 +22,11 @@ class BaseElement {
     private BaseElement container;
 
     private static LocalDateTime startT;
-    //private static Element fermerPopupTraitementPeutPasAboutir = new Element("fermer popup peut pas aboutir", By.xpath("//div[@class=\"modal ng-scope\"][contains(., \"" + ("Votre_traitement_ne_peut_aboutir") + "\")]/div/button[contains(., \"" + ("Fermer") + "\")]"));
-    //private static Element fermerPopupTutoriel = new Element("fermer popup tutoriel", By.xpath("//div[@class=\"modal ng-scope\"][contains(., '" + ("Bienvenue") + "')]/div[@class=\"modal-footer\"]/div[@class=\" pull-right\"]/button[@ng-click=\"close()\"]"));
-
 
     /**
-     * @param elementName    : nom / description de l'élément
-     * @param elementLocator : information d'identification de l'élément. Exemple : By.id("idelement"), By.name("elementName"), By.xpath("//a[@class='toto']")
+     * constructor
+     * @param elementName name of the element as it wil appear in the report
+     * @param elementLocator selenium locator in order to find the element in the DOM
      */
     public BaseElement(String elementName, By elementLocator) {
         name = elementName;
@@ -36,36 +36,49 @@ class BaseElement {
         container = null;
     }
 
+    /**
+     * set a name to the element
+     * @param elementName
+     */
     public void setName(String elementName) {
         name = elementName;
         notValuedName = elementName;
     }
 
+    /**
+     * set a locator to the element
+     * @param elementLocator
+     */
     public void setLocator(By elementLocator) {
         locator = elementLocator;
         notValuedLocator = elementLocator;
     }
 
+    /**
+     * get the name of the element
+     * @return
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * get the locator of the element
+     * @return
+     */
     public By getLocator() {
         return locator;
     }
 
     /**
-     * Définit dans quel élement on doit chercher l'élément, si non setté on le recherchera dans tout le body
-     * par exemple element.click() cliquera sur le premier élément correspondant dans toute la page quand element.setContainer(parent).click() cliquera sur le premier élément correspondant dans l'élément parent
-     *
-     * @param containerElement : élément contenant l'élément recherché
-     * @return l'élément recherché dans le container
+     * element can be in an other element. In order to limitate the search of the element in one ancestor we can set a container that is another element
+     * @param containerElement
+     * @return
      */
     public BaseElement setBaseContainer(BaseElement containerElement) {
         container = containerElement;
         String locatorPath = locator.toString();
         if (container != null && locatorPath.contains("By.xpath: ")) {
-            //locatorPath = locatorPath.replaceAll("By.xpath: ", "");
             locatorPath = locatorPath.substring(locatorPath.indexOf(": ")+2);
             if (locatorPath.startsWith("//")) {
                 locator = By.xpath("." + locatorPath);
@@ -78,15 +91,13 @@ class BaseElement {
     }
 
     /**
-     * Remet à null le container de l'élément pour le chercher das tout le body dans tout le body
-     *
-     * @return l'élément recherché dans le container
+     * reset the container : element will be search in all the body
+     * @return
      */
     public BaseElement resetBaseContainer() {
         container = null;
         String locatorPath = locator.toString();
         if (locatorPath.contains("By.xpath: ")) {
-            //locatorPath = locatorPath.replaceAll("By.xpath: ", "");
             locatorPath = locatorPath.substring(locatorPath.indexOf(": ")+2);
             if (locatorPath.startsWith("//")) {
                 locator = By.xpath(locatorPath.substring(1));
@@ -99,22 +110,19 @@ class BaseElement {
     }
 
     /**
-     * Renvoi le container dans lequel on doit rechercher l'élément
-     *
-     * @return le container dans lequel on doit rechercher l'élément
+     * get the container of the element
+     * @return
      */
     public BaseElement getBaseContainer() {
         return container;
     }
 
     /**
-     * Si le elementLocator contient plusieurs variables, par exemple By.xpath("//button[@class='MA_CLASSE'][contains(.,'MA_VARIABLE')]"),
-     * utiliser cette méthode pour les valoriser avant de faire une action sur l'élément :
-     * mon_element.setParamater(new String[] {"MA_CLASS","success_button", "MA_VARIABLE", "Enregister"});
-     * mon_element.click();
-     *
-     * @param params : tableau des variables et de leur valorisation {var1, value1, var2, value2, var3, value3, ...}
-     * @return l'element paramétré
+     * replace some strings in locator by other values. For example :
+     * Element element = new Element("element, By.xpath("//button[@class='{myClasse}'][contains(.,'{aValue}')]);
+     * element.setParamater(new String[] {"{myClasse}","success_button", "{aValue}", "Enregister"});
+     * @param params
+     * @return
      */
     public BaseElement setBaseParameter(String[] params) {
         String path = notValuedLocator.toString();
@@ -129,14 +137,12 @@ class BaseElement {
     }
 
     /**
-     * Si le elementLocator contient une variable et une seule, par exemple By.xpath("//button[contains(.,'MA_VARIABLE')]"),
-     * utiliser cette méthode pour la valoriser avant de faire une action sur l'élément :
-     * mon_element.setParamater("MA_VARIABLE", "Enregister");
-     * mon_element.click();
-     *
-     * @param key   : nom de la variable dans le locator
-     * @param value : valeur de remplacement de la key dans le locator (clé de test_env.properties ou savedData.properties ou valeur en dur, la valeur est traduite si correspond à un clé de label_langue.properties)
-     * @return l'element paramétré
+     * replace one string in the locator by other values. For example :
+     * Element element = new Element("element, By.xpath("//button[@class='{myClasse}']);
+     * element.setParamater({"{myClasse}","success_button");
+     * @param key
+     * @param value
+     * @return
      */
     public BaseElement setBaseParameter(String key, String value) {
         name = name.replace(key, (value));
@@ -144,6 +150,10 @@ class BaseElement {
         return this;
     }
 
+    /**
+     * set locator with a string after converting string locator in By locator
+     * @param path
+     */
     private void setLocatorFromString(String path) {
         if (path.contains("By.xpath: ")) {
             locator = By.xpath(path.replaceAll("By.xpath: ", ""));
@@ -158,9 +168,8 @@ class BaseElement {
     }
 
     /**
-     * retourne le locator de l'élément format xPath;
-     *
-     * @return : element xpath
+     * convert locator in By.xpath locator
+     * @return
      */
     public String locatorXpath() {
         String locatorPath = locator.toString();
@@ -177,26 +186,40 @@ class BaseElement {
     }
 
 
+    /**
+     * find an element (display or hidden). Timeout defined in the test_xx.properties
+     * @return
+     */
     public WebElement findElement() {
-        return findElement(TestProperties.implicit_wait);
+        return findElement(TestProperties.timeout);
     }
 
+    /**
+     * find an element (display or hidden). Timeout defined in argument
+     * @param timeout
+     * @return
+     */
     public WebElement findElement(int timeout) {
-        //System.out.println(">>>>>>>>>>>>>findElement " + element.name);
         WebElement mon_element = findElementNoScrollBefore(timeout);
-        if (mon_element != null) scrollElement(this.getClass().getSimpleName(), mon_element);
+        if (mon_element != null) scrollElement(mon_element);
         return mon_element;
     }
 
+    /**
+     * find an element (display or hidden) but no scroll. Timeout defined in the test_xx.properties
+     * @return
+     */
     public WebElement findElementNoScrollBefore() {
-        return findElementNoScrollBefore(TestProperties.implicit_wait);
+        return findElementNoScrollBefore(TestProperties.timeout);
     }
 
+    /**
+     * find an element (display or hidden) but no scroll. Timeout defined in argument
+     * @param timeout
+     * @return
+     */
     public WebElement findElementNoScrollBefore(int timeout) {
         Loader.waitNotVisible();
-        startT();
-        fermerPopupParasite();
-        //System.out.println(">>>>>>>>>>>>>findElementNoScrollBefore " + element.name);
         By locator = this.getLocator();
         BaseElement container = this.getBaseContainer();
         try {
@@ -213,23 +236,26 @@ class BaseElement {
                         ExpectedConditions.presenceOfNestedElementLocatedBy(container.getLocator(), locator)
                 );
             }
-            //System.out.println("=============> " + searchTime() + " ms");
             return mon_element;
         } catch (Exception e) {
-            //System.out.println("=============> " + searchTime() + " ms");
             return null;
         }
     }
 
+    /**
+     * find all elements corresponding to the element locator. Timeout defined in the test_xx.properties
+     * @return
+     */
     public List<WebElement> findAllElements() {
-        return findAllElements(TestProperties.implicit_wait);
+        return findAllElements(TestProperties.timeout);
     }
 
+    /**
+     * find all elements corresponding to the element locator. Timeout defined in argument
+     * @return
+     */
     public List<WebElement> findAllElements(int timeout) {
         Loader.waitNotVisible();
-        startT();
-        fermerPopupParasite();
-        //System.out.println(">>>>>>>>>>>>>findAllElements " + element.name);
         By locator = this.getLocator();
         List<WebElement> mon_element = null;
         BaseElement container = this.getBaseContainer();
@@ -243,36 +269,35 @@ class BaseElement {
                         ExpectedConditions.presenceOfNestedElementsLocatedBy(container.getLocator(), locator)
                 );
             }
-            //System.out.println("=============> " + searchTime() + " ms");
             return mon_element;
         } catch (Exception e) {
-            //System.out.println("=============> " + searchTime() + " ms");
             return mon_element;
         }
     }
 
+    /**
+     * find an element display and enabled. Timeout defined in the test_xx.properties
+     * @return
+     */
     public WebElement findElementEnabled() {
         Loader.waitNotVisible();
-        startT();
-        fermerPopupParasite();
-        //System.out.println(">>>>>>>>>>>>>findElementEnabled " + element.name);
         By locator = this.getLocator();
         BaseElement container = this.getBaseContainer();
         WebElement mon_element = null;
         try {
             if (container == null) {
-                mon_element = (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.implicit_wait)).until(
+                mon_element = (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.timeout)).until(
                         ExpectedConditions.elementToBeClickable(locator)
                 );
             } else {
-                mon_element = (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.implicit_wait)).until(
+                mon_element = (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.timeout)).until(
                         ExpectedConditions.elementToBeClickable(
-                                (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.implicit_wait)).until(
+                                (new WebDriverWait(Driver.getCurrentDriver(), TestProperties.timeout)).until(
                                         ExpectedConditions.presenceOfNestedElementLocatedBy(container.getLocator(), locator)
                                 ))
                 );
             }
-            if (mon_element != null) scrollElement(this.getClass().getSimpleName(), mon_element);
+            if (mon_element != null) scrollElement(mon_element);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -280,23 +305,30 @@ class BaseElement {
         return mon_element;
     }
 
-
+    /**
+     * find an element display. Timeout defined in the test_xx.properties
+     * @return
+     */
     public WebElement findElementDisplayed() {
-        return findElementDisplayedMaxWait(TestProperties.implicit_wait);
+        return findElementDisplayed(TestProperties.timeout);
     }
 
-    public WebElement findElementDisplayedMaxWait(int timeout) {
-        //System.out.println(">>>>>>>>>>>>>findElementDisplayedMaxWait " + element.name);
-        WebElement mon_element = findElementDisplayedNoScrollBeforeMaxWait(timeout);
-        if (mon_element!=null) scrollElement(this.getClass().getSimpleName(), mon_element);
+    /**
+     * find an element display. Timeout defined in argument
+     * @return
+     */
+    public WebElement findElementDisplayed(int timeout) {
+        WebElement mon_element = findElementDisplayedNoScrollBefore(timeout);
+        if (mon_element!=null) scrollElement(mon_element);
         return mon_element;
     }
 
-    public WebElement findElementDisplayedNoScrollBeforeMaxWait(int timeout) {
+    /**
+     * find an element display but no scroll. Timeout defined in argument
+     * @return
+     */
+    public WebElement findElementDisplayedNoScrollBefore(int timeout) {
         Loader.waitNotVisible();
-        startT();
-        fermerPopupParasite();
-        //System.out.println(">>>>>>>>>>>>>findElementDisplayedNoScrollBeforeMaxWait " + element.name);
         By locator = this.getLocator();
         BaseElement container = this.getBaseContainer();
         try {
@@ -313,65 +345,32 @@ class BaseElement {
                                 ))
                 );
             }
-            //System.out.println("=============> " + searchTime() + " ms");
             return mon_element;
         } catch (Exception e) {
-            //System.out.println("=============> " + searchTime() + " ms");
             return null;
         }
     }
 
-    WebElement findElementRightNow() {
-        return findElementDisplayedMaxWait(0);
-    }
-
 
     // PRIVATE -------------------------------------------------------------------------------------------------
-    private void scrollElement(String elementClass, WebElement element) {
-        /*try {
+
+    /**
+     * if element is not the 2nd or 3rd quarter of the page ==> scroll to the element
+     * you can tune that method if you have header or footer i you page that can hide the element. If you don't you can comment this method
+     * @param element
+     */
+    private void scrollElement(WebElement element) {
+        try {
             if (element != null) {
-                // si l'élément est hors cadre on scroll sur l'élément ou si c'est un dropdown
                 int y = element.getLocation().getY();
-                long scroll = (long) WebDriver.driver.executeScript("return window.pageYOffset;");
-                int hauteurEcran = WebDriver.driver.manage().window().getSize().height;
-                if (!elementClass.equals("Element") && !elementClass.equals("CalendarElement")) {
-                    WebDriver.driver.executeScript("arguments[0].scrollIntoView(true);window.scrollBy(0 , -300);", element);
-                } else {
-                    if (Math.abs(y - scroll) < (300) || Math.abs(y - scroll) > (hauteurEcran - 400)) {
-                        WebDriver.driver.executeScript("window.scrollBy(0 , " + (y - scroll - 300) + ");");
-                    }
+                long scroll = (long) Driver.JSExecutor().executeScript("return window.pageYOffset;");
+                int screenHeight = Driver.getCurrentDriver().manage().window().getSize().height;
+                if (Math.abs(y - scroll) < (screenHeight/4) || Math.abs(y - scroll) > (screenHeight - screenHeight/4)) {
+                    Driver.JSExecutor().executeScript("window.scrollBy(0 , " + (y - scroll - screenHeight/4) + ");");
                 }
             }
-        } catch (Exception e) {
-            //e.printStackTrace();
-        }*/
-    }
-
-    private void fermerPopupParasite() {
-        /*try {
-            WebElement mon_element = (new WebDriverWait(WebDriver.driver, 0)).until(
-                    ExpectedConditions.presenceOfElementLocated(fermerPopupTutoriel.getLocator())
-            );
-            if (mon_element!=null) mon_element.click();
-        } catch (Exception e) {
-            //do nothing
+        } catch (Exception ignore) {
         }
-        try {
-            WebElement mon_element = (new WebDriverWait(WebDriver.driver, 0)).until(
-                    ExpectedConditions.presenceOfElementLocated(fermerPopupTraitementPeutPasAboutir.getLocator())
-            );
-            if (mon_element!=null) mon_element.click();
-        } catch (Exception e) {
-            //do nothing
-        }*/
-    }
-
-    private static void startT() {
-        startT = LocalDateTime.now();
-    }
-
-    private static long searchTime() {
-        return  ChronoUnit.MILLIS.between(startT, LocalDateTime.now());
     }
 
 }

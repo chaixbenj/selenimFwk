@@ -1,6 +1,5 @@
 package pageObject;
 
-import driver.Driver;
 import element.Element;
 import element.Loader;
 import org.openqa.selenium.By;

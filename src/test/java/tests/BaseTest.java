@@ -11,13 +11,16 @@ import java.net.MalformedURLException;
 
 public class BaseTest {
 
+    /**
+     * load the properties and start first driver
+     */
     @BeforeSuite
     public  void beforeSuiteStartWD() {
         try {
             String env = System.getProperty("runEnv");
             TestProperties.loadProperties((env!=null?env:"next"));
             Driver.startOrBackToFirstDriver(this.getClass().getSimpleName());
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -31,7 +34,7 @@ public class BaseTest {
     @AfterMethod
     public void afterMethodEndTest(ITestResult result)
     {
-        Driver.getReport().endTest(result.isSuccess(), String.valueOf(result.getThrowable()));
+        Driver.getReport().endTest(String.valueOf(result.getThrowable()));
     }
 
     @AfterSuite

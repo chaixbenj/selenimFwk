@@ -14,10 +14,11 @@ import java.util.Properties;
 
 public class Data {
     private static HashMap<String,String> savedData = new HashMap<String, String>();
+
     /**
-     * sauvegarde une donnée sous le nom name
-     * @param name nom de sauvegarde de la donnée
-     * @param value valeur à sauvegarder
+     * save a value under a name
+     * @param name
+     * @param value
      */
     public static void save(String name, String value) {
         // on charge dans 2 tableaux de string et dans un fichier properties au cas où il y ait un redémarrage de webdriver
@@ -32,11 +33,9 @@ public class Data {
     }
 
     /**
-     * si name est une propertie de test_env.properties renvoie la valeur de la properties, sinon renvoie la valeur de la donnée sauvegardée sous le nom name s'il y a une sauvegarde sous ce nom, sinon renvoie name
-     * si name est de la forme bla{blo}bli{blu}, ça renvoi Data.get(bla{blo}bli{blu}) si ça existe sinon bla+Data.get(blo) + bli + Data.get(blu)
-     * si name est de la forme "sysdate;+/-N;format", ça renvoi la date du jour + ou - "N" jour(s) au format "format"
-     * @param name nom de sauvegarde de la donnée
-     * @return si name est une propertie de test_env.properties renvoie la valeur de la properties, sinon renvoie la valeur de la donnée sauvegardée sous le nom name s'il y a une sauvegarde sous ce nom, sinon renvoie name
+     * get a value by a name
+     * @param name
+     * @return
      */
     public static String get(String name) {
         String data=null;
@@ -75,9 +74,9 @@ public class Data {
 
 
     /**
-     * renvoie la valeur d'un contenu : contenu d'un fichier si contenu est un fichier dans target/test-classes/DataSet/langue, sinon Data.get(contenu)
-     * @param content nom de sauvegarde de la donnée
-     * @return la valeur d'un contenu : contenu d'un fichier si contenu est un fichier dans target/test-classes/DataSet/langue, sinon Data.get(contenu)
+     * if arg is a file path return its content, else return Data.get(content)
+     * @param content
+     * @return
      */
     public static String getContentIfIsFile(String content) {
         String contentcontent;
@@ -100,35 +99,5 @@ public class Data {
             contentcontent = Data.get(content);
         }
         return contentcontent;
-    }
-
-    /**
-     * renvoie la base64 d'un contenu : contenu d'un fichier si contenu est un fichier dans target/test-classes/DataSet/langue, sinon Data.get(contenu)
-     * @param content nom de sauvegarde de la donnée
-     * @return la valeur d'un contenu : contenu d'un fichier si contenu est un fichier dans target/test-classes/DataSet/langue, sinon Data.get(contenu)
-     */
-    public static String getBase64IsFile(String content) {
-        String base64;
-        try
-        {
-            String fichier;
-            if (new File(content).exists()) {
-                fichier = content;
-                base64 = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(fichier))));
-            } else {
-                if (new File("target/test-classes/DataSet/" + content).exists()) {
-                    fichier = "target/test-classes/DataSet/" + content;
-                    base64 = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(fichier))));
-                } else {
-                    fichier = "target/test-classes/DataSet/fr/" + content;
-                    base64 = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(fichier))));
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            base64 = new String(Base64.getEncoder().encode(content.getBytes()));
-        }
-        return base64;
     }
 }

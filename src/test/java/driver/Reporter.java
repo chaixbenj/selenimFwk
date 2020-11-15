@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
+/**
+ * this class manage the test report. Log actions and assertions
+ */
 public class Reporter {
     private String pageObjetMethod = "";
     private SoftAssert softAssert = new SoftAssert();
@@ -29,19 +32,10 @@ public class Reporter {
     ExtentReports extent;
     ExtentTest logger;
 
-    public Reporter() {
-        extent = new ExtentReports (Paths.get("").toAbsolutePath().toString() + "\\target\\test-reports\\suite" + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_hhmm")) + ".html", true);
-        extent
-                .addSystemInfo("Environment", TestProperties.environnement);
-        //loading the external xml file (i.e., extent-config.xml) which was placed under the base directory
-        //You could find the xml file below. Create xml file in your project and copy past the code mentioned below
-        extent.loadConfig(new File(Paths.get("").toAbsolutePath().toString() + "\\target\\test-classes\\extent-config.xml"));
-        nbStepFuncPass = 0;
-        nbStepFuncFail = 0;
-        nbStepFuncError = 0;
-        nbTestError = 0;
-    }
-
+    /**
+     * constructor
+     * @param suiteName
+     */
     public Reporter(String suiteName) {
         extent = new ExtentReports (Paths.get("").toAbsolutePath().toString() + "\\target\\test-reports\\" + suiteName + "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_hhmm")) + ".html", true);
         //extent.addSystemInfo("Environment","Environment Name")
@@ -56,6 +50,9 @@ public class Reporter {
         nbTestError = 0;
     }
 
+    /**
+     * publish report
+     */
     public void publish() {
         extent.flush();
     }
@@ -64,69 +61,159 @@ public class Reporter {
         logger = extent.startTest(test);
     }
 
-    public void endTest(boolean isSuccess, String errorMessage) {
+    /**
+     * called after test
+     * @param errorMessage
+     */
+    public void endTest(String errorMessage) {
         if (nbTestError!=0) logger.log(LogStatus.FAIL, "[TEST FAILED] <b>" + errorMessage + "</b>");
         Assert.assertEquals(nbTestError, 0);
         nbTestError = 0;
     }
 
+    /**
+     * log equality assertion between 2 int
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(int expected, int actual) {
         assertEquals(null, expected, actual);
     }
+
+    /**
+     * log equality assertion between 2 int with an information in the log
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(String info, int expected, int actual) {
         assertEquals(info, String.valueOf(expected), String.valueOf(actual));
     }
 
+    /**
+     * log equality assertion between 2 booleans
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(boolean expected, boolean actual) {
         assertEquals(null, expected, actual);
     }
+
+    /**
+     * log equality assertion between 2 booleans with an information in the log
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(String info, boolean expected, boolean actual) {
         assertEquals(info, String.valueOf(expected), String.valueOf(actual));
     }
 
+    /**
+     * log equality assertion between 2 doubles
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(Double expected, Double actual) {
         assertEquals(null, expected, actual);
     }
+
+    /**
+     * log equality assertion between 2 doubles
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(String info, Double expected, Double actual) {
         assertEquals(info, String.valueOf(expected), String.valueOf(actual));
     }
 
+    /**
+     * log equality assertion between 2 strings
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(String expected, String actual) {
         assertEquals(null, expected, actual);
     }
 
+    /**
+     * log equality assertion between 2 strings with an information in the log
+     * @param expected
+     * @param actual
+     */
     public void assertEquals(String info, String expected, String actual) {
         String status = (expected==actual?"pass":"failnext");
         log(status, (info!=null?info + " ":"") + "assertEquals", null, expected, actual, null);
     }
 
+    /**
+     * log an assertion that one int is greater than another
+     * @param num1
+     * @param num2
+     */
     public void assertGreater(int num1, int num2) {
         assertGreater(null, num1, num2);
     }
+
+    /**
+     * log an assertion that one int is greater than another with an information in the log
+     * @param num1
+     * @param num2
+     */
     public void assertGreater(String info, int num1, int num2) {
         assertGreater(info, Double.valueOf(num1), Double.valueOf(num2));
     }
 
+    /**
+     * log an assertion that one double is greater than another
+     * @param num1
+     * @param num2
+     */
     public void assertGreater(Double num1, Double num2) {
         assertGreater(null, num1, num2);
     }
+
+    /**
+     * log an assertion that one double is greater than another with an information in the log
+     * @param num1
+     * @param num2
+     */
     public void assertGreater(String info, Double num1, Double num2) {
         String status = (num1>num2?"pass":"failnext");
         log(status, (info!=null?info + " ":"") + "assertGreater", null, String.valueOf(num1), String.valueOf(num2), null);
     }
 
+    /**
+     * log an assertion that a string is not null
+     * @param actual
+     */
     public void assertNotNull(String actual) {
         assertNotNull(null, actual);
     }
 
+    /**
+     * log an assertion that a string is not null with an information in the log
+     * @param actual
+     */
     public void assertNotNull(String info, String actual) {
         String status = (actual!=null?"pass":"failnext");
         log(status, (info!=null?info + " ":"") + "assertNotNull", null, null, actual, null);
     }
 
+    /**
+     * log an assertion that 2 dates are equals with an average allowed
+     * @param date
+     * @param format
+     * @param minuteEcartAcceptable
+     */
     public void assertDateEqualsLocalDateTime(String date, String format, int minuteEcartAcceptable) {
         assertDateEqualsLocalDateTime(null, date, format, minuteEcartAcceptable);
     }
+
+    /**
+     * log an assertion that 2 dates are equals with an average allowed and an information in the log
+     * @param date
+     * @param format
+     * @param minuteEcartAcceptable
+     */
     public void assertDateEqualsLocalDateTime(String info, String date, String format, int minuteEcartAcceptable) {
         LocalDateTime dateFormatee;
         String status = "pass";
@@ -143,6 +230,16 @@ public class Reporter {
         }
         log(status, (info!=null?info + " ":"") + "assertDateEqualsLocalDateTime", "", String.valueOf(now) + " +/- " + String.valueOf(minuteEcartAcceptable) + " minutes" , String.valueOf(date), message);
     }
+
+    /**
+     * write a log in the report
+     * @param status
+     * @param action
+     * @param element
+     * @param expected
+     * @param actual
+     * @param message
+     */
     public void log(String status, String action, String element, String expected, String actual, String message) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         int i = 0;
@@ -204,10 +301,11 @@ public class Reporter {
         }
     }
 
-
-
-
-
+    /**
+     * compare a screenshot of the current driver with a png reference from repository resources/references
+     * @param reference
+     * @param pourcentageDiffAdmissible
+     */
     public void compareScreenshotRef(String reference, double pourcentageDiffAdmissible) {
         reference = Paths.get("").toAbsolutePath().toString() + "\\target\\test-classes\\references\\ref" + TestProperties.browser + TestProperties.browser_width + TestProperties.browser_heigth + reference;
         File SrcFile= ((TakesScreenshot) Driver.getCurrentDriver()).getScreenshotAs(OutputType.FILE);
@@ -224,6 +322,14 @@ public class Reporter {
         }
     }
 
+    /**
+     * compare 2 image files
+     * @param file1
+     * @param file2
+     * @param pourcentageDiffAdmissible
+     * @return
+     * @throws IOException
+     */
     private boolean compareImage(String file1, String file2, double pourcentageDiffAdmissible) throws IOException
     {
         boolean hasDiff = true;
@@ -314,6 +420,13 @@ public class Reporter {
         return hasDiff;
     }
 
+    /**
+     * make a comparison between 2 pdf after converting them in png
+     * @param filepdf
+     * @param fileref
+     * @param pourcentageDiffAdmissible
+     * @return
+     */
     public boolean pdfToPNG(String filepdf, String fileref, double pourcentageDiffAdmissible) {
         boolean hasDiff = true;
         try {
@@ -384,7 +497,9 @@ public class Reporter {
         return hasDiff;
     }
 
-
+    /**
+     * called when an assertion or an action fail in order to add a screenshot in the report
+     */
     private void screenShotFail() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String callingFunc = stackTraceElements[3].getClassName() + "." +  stackTraceElements[3].getMethodName();
@@ -394,6 +509,11 @@ public class Reporter {
         }
     }
 
+    /**
+     * encode file in 64binary
+     * @param file
+     * @return
+     */
     private static String encodeFileToBase64Binary(File file){
         String encodedfile = null;
         try {

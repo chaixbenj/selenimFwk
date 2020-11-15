@@ -1,5 +1,8 @@
 package element;
 
+/**
+ * define your own selector
+ */
 public abstract class By extends org.openqa.selenium.By {
     public static org.openqa.selenium.By model(String value) {
         return org.openqa.selenium.By.cssSelector("[ng-model='" + value + "']");
